@@ -333,16 +333,6 @@ function PlanetBackdrop() {
           }}
         />
 
-        {/* highlight especular */}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            background:
-              "radial-gradient(ellipse 30% 13% at 48% 93%, rgba(225,255,235,0.36) 0%, transparent 70%)",
-            mixBlendMode: "screen",
-          }}
-        />
-
         {/* atmósfera exterior pulsante */}
         <motion.div
           animate={{ opacity: [0.55, 0.8, 0.55] }}
