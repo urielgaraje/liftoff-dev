@@ -345,30 +345,6 @@ function PlanetBackdrop() {
         />
 
       </motion.div>
-
-      {/* Saturn ring DELANTE — la franja que cruza por delante del horizonte
-          visible del planeta (solo el segmento que cubre el planeta). */}
-      <div
-        className="absolute origin-center"
-        style={{
-          left: "30vw",
-          right: "30vw",
-          top: "8vw",
-          height: "2vw",
-          background: `linear-gradient(to right,
-            transparent 0%,
-            rgba(245,250,225,0.5) 30%,
-            rgba(190,215,170,0.4) 50%,
-            rgba(245,250,225,0.5) 70%,
-            transparent 100%
-          )`,
-          borderRadius: "50%",
-          filter: "blur(0.4px)",
-          mixBlendMode: "screen",
-          opacity: 0.7,
-          transform: "rotate(-5deg)",
-        }}
-      />
     </div>
   );
 }
