@@ -1,0 +1,19 @@
+{
+  "name": "layers-demo",
+  "description": "Demo team to inspect Claude Code's underlying team/task filesystem model.",
+  "createdAt": 1777976514410,
+  "leadAgentId": "team-lead@layers-demo",
+  "leadSessionId": "d66ad590-7b11-431d-836a-ad15d37c2169",
+  "members": [
+    {
+      "agentId": "team-lead@layers-demo",
+      "name": "team-lead",
+      "agentType": "team-lead",
+      "model": "claude-opus-4-7[1m]",
+      "joinedAt": 1777976514410,
+      "tmuxPaneId": "",
+      "cwd": "/",
+      "subscriptions": []
+    }
+  ]
+}

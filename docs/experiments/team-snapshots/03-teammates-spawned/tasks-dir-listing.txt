@@ -1,0 +1,7 @@
+total 24
+drwxr-xr-x@  6 uriel.blanco  staff   192 May  5 12:22 .
+drwxr-xr-x@ 96 uriel.blanco  staff  3072 May  5 12:21 ..
+-rw-r--r--@  1 uriel.blanco  staff     0 May  5 12:21 .lock
+-rw-r--r--@  1 uriel.blanco  staff   310 May  5 12:22 1.json
+-rw-r--r--@  1 uriel.blanco  staff   313 May  5 12:22 2.json
+-rw-r--r--@  1 uriel.blanco  staff   307 May  5 12:22 3.json

@@ -1,0 +1,4 @@
+total 0
+drwxr-xr-x@  3 uriel.blanco  staff    96 May  5 12:21 .
+drwxr-xr-x@ 96 uriel.blanco  staff  3072 May  5 12:21 ..
+-rw-r--r--@  1 uriel.blanco  staff     0 May  5 12:21 .lock

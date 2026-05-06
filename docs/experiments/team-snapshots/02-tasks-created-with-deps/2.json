@@ -1,0 +1,11 @@
+{
+  "id": "2",
+  "subject": "Investigate context engineering layer",
+  "description": "Research and write a one-paragraph summary of what context engineering is, with one concrete example.",
+  "activeForm": "Investigating context engineering",
+  "status": "pending",
+  "blocks": [
+    "3"
+  ],
+  "blockedBy": []
+}

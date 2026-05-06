@@ -1,0 +1,12 @@
+{
+  "id": "3",
+  "subject": "Combine both summaries into a single section",
+  "description": "Take the prompt and context summaries and merge them into a single coherent markdown section.",
+  "activeForm": "Combining summaries",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "1",
+    "2"
+  ]
+}

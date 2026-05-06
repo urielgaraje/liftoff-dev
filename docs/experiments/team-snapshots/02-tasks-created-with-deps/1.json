@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "subject": "Investigate prompt engineering layer",
+  "description": "Research and write a one-paragraph summary of what prompt engineering is, with one concrete example.",
+  "activeForm": "Investigating prompt engineering",
+  "status": "pending",
+  "blocks": [
+    "3"
+  ],
+  "blockedBy": []
+}
