@@ -4,6 +4,7 @@ Race multijugador de cohetes hacia un planeta. Hasta 50 jugadores compiten en di
 
 ## Cómo arrancar (orden de lectura)
 
+0. **`HANDOFF.md`** — empezar aquí en sesión nueva: estado, comandos de verificación, puntero al siguiente slice.
 1. **`mission.md`** — qué es el producto y por qué existe (inmutable).
 2. **`CLAUDE.md`** — convenciones técnicas, stack, naming, anti-patterns.
 3. **`harness.md`** — cómo está montado el setup externo (servicios, MCPs, gotchas).

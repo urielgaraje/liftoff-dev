@@ -7,7 +7,9 @@
 
 ## Estado: `stage-1-typing-v1`
 
-Tag `stage-1-typing-v1` en `main`. Arquitectura acoplable de etapas + primera etapa (typing race) end-to-end. 6 unit tests + 4 E2E (chromium + firefox) verdes en ~50s.
+Tag `stage-1-typing-v1` en `main` (commit `948979f`). Arquitectura acoplable de etapas + primera etapa (typing race) end-to-end. 6 unit tests + 4 E2E (chromium + firefox) verdes en ~37s.
+
+**Commit más reciente** (`c1116e7`, ya pushed): fix UX del banner "Planeta alcanzado" del host (z-index + duración + visibilidad), Player End con TOP 3 del leaderboard, y simplify pass (constante `STAGE_ENDED_BANNER_DURATION_MS`, `EndedView` con prop mínimo, guards no-op en `useRoomChannel`, dead code borrado).
 
 ### URLs
 
