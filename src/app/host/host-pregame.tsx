@@ -233,41 +233,40 @@ function PlanetBackdrop() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, ease: "easeOut" }}
-        className="absolute"
+        className="absolute left-1/2 -translate-x-1/2"
         style={{
-          left: "-45vw",
-          bottom: "-45vw",
-          width: "110vw",
-          height: "110vw",
+          top: "-150vw",
+          width: "180vw",
+          height: "180vw",
         }}
       >
         <div
           className="size-full rounded-full"
           style={{
             background: `
-              radial-gradient(circle at 65% 30%, rgba(120,200,240,0.45) 0%, rgba(34,90,140,0.25) 30%, rgba(8,8,30,0.6) 65%, rgba(8,8,30,0.95) 100%)
+              radial-gradient(circle at 50% 70%, rgba(120,220,170,0.6) 0%, rgba(46,160,120,0.32) 25%, rgba(20,80,80,0.5) 55%, rgba(8,16,30,0.95) 100%)
             `,
             boxShadow: `
-              inset -60px -60px 200px rgba(0,0,0,0.7),
-              0 0 120px rgba(34,211,238,0.25),
-              0 0 240px rgba(34,211,238,0.18)
+              inset 0 -90px 240px rgba(0,0,0,0.65),
+              0 0 140px rgba(52,211,153,0.32),
+              0 0 280px rgba(52,211,153,0.22)
             `,
           }}
         />
         <motion.div
-          animate={{ opacity: [0.35, 0.55, 0.35] }}
+          animate={{ opacity: [0.3, 0.55, 0.3] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(circle at 30% 70%, rgba(34,211,238,0.18) 0%, transparent 50%)",
+              "radial-gradient(circle at 35% 80%, rgba(52,211,153,0.25) 0%, transparent 45%)",
             mixBlendMode: "screen",
           }}
         />
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            border: "1px solid rgba(34,211,238,0.18)",
+            border: "1px solid rgba(52,211,153,0.18)",
           }}
         />
       </motion.div>

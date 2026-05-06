@@ -259,37 +259,34 @@ function LobbyView({
 
       <div className="flex flex-1 flex-col items-center justify-center gap-12 px-8 pb-12 pt-4">
         {selfPlayer && (
-          <div className="relative flex flex-col items-center justify-center">
-            {[0, 1, 2, 3].map((i) => (
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="flex flex-col items-center gap-5"
+          >
+            <div className="relative flex size-48 items-center justify-center">
               <motion.span
-                key={i}
                 aria-hidden
-                animate={{ scale: [1, 3.4], opacity: [0.55, 0] }}
-                transition={{
-                  duration: 3.2,
-                  delay: i * 0.8,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                }}
-                className="absolute size-32 rounded-full"
+                animate={{ scale: [1, 1.06, 1], opacity: [0.55, 0.85, 0.55] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-full"
                 style={{
-                  border: `1px solid var(--color-rocket-${selfPlayer.rocketSkin})`,
+                  background: `radial-gradient(circle, color-mix(in oklab, var(--color-rocket-${selfPlayer.rocketSkin}) 22%, transparent) 0%, color-mix(in oklab, var(--color-rocket-${selfPlayer.rocketSkin}) 8%, transparent) 55%, transparent 75%)`,
+                  boxShadow: `0 0 60px color-mix(in oklab, var(--color-rocket-${selfPlayer.rocketSkin}) 40%, transparent)`,
+                  border: `1px solid color-mix(in oklab, var(--color-rocket-${selfPlayer.rocketSkin}) 35%, transparent)`,
                 }}
               />
-            ))}
-            <span
-              aria-hidden
-              className="absolute size-32 rounded-full"
-              style={{
-                background: `radial-gradient(circle, color-mix(in oklab, var(--color-rocket-${selfPlayer.rocketSkin}) 25%, transparent) 0%, transparent 70%)`,
-              }}
-            />
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="relative flex flex-col items-center gap-5"
-            >
+              <motion.span
+                aria-hidden
+                animate={{ scale: [1, 1.04, 1], opacity: [0.4, 0.7, 0.4] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                className="absolute inset-[-18px] rounded-full"
+                style={{
+                  border: `1px solid var(--color-rocket-${selfPlayer.rocketSkin})`,
+                  opacity: 0.5,
+                }}
+              />
               <span
                 className="relative inline-flex items-center justify-center"
                 style={{
@@ -298,40 +295,40 @@ function LobbyView({
               >
                 <Rocket
                   skin={selfPlayer.rocketSkin}
-                  size={132}
+                  size={120}
                   animate
                   intensity={1.2}
                 />
               </span>
-              <p
-                className={cn(
-                  "text-4xl font-medium",
-                  SKIN_TEXT_CLASS[selfPlayer.rocketSkin],
-                )}
-                style={{
-                  textShadow: `0 0 28px var(--color-rocket-${selfPlayer.rocketSkin})`,
-                }}
+            </div>
+            <p
+              className={cn(
+                "text-4xl font-medium",
+                SKIN_TEXT_CLASS[selfPlayer.rocketSkin],
+              )}
+              style={{
+                textShadow: `0 0 28px var(--color-rocket-${selfPlayer.rocketSkin})`,
+              }}
+            >
+              {selfPlayer.nickname}
+            </p>
+            <div className="flex items-center gap-2">
+              <motion.span
+                aria-hidden
+                animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                className="size-1.5 rounded-full bg-accent-cyan"
+                style={{ boxShadow: "0 0 10px var(--color-accent-cyan)" }}
+              />
+              <motion.p
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="font-mono text-xs tracking-[0.35em] text-accent-cyan"
               >
-                {selfPlayer.nickname}
-              </p>
-              <div className="flex items-center gap-2">
-                <motion.span
-                  aria-hidden
-                  animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
-                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-                  className="size-1.5 rounded-full bg-accent-cyan"
-                  style={{ boxShadow: "0 0 10px var(--color-accent-cyan)" }}
-                />
-                <motion.p
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                  className="font-mono text-xs tracking-[0.35em] text-accent-cyan"
-                >
-                  PREPARANDO DESPEGUE
-                </motion.p>
-              </div>
-            </motion.div>
-          </div>
+                PREPARANDO DESPEGUE
+              </motion.p>
+            </div>
+          </motion.div>
         )}
 
         <div className="flex w-full max-w-3xl flex-col items-center gap-3">
