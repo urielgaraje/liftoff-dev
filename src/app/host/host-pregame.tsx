@@ -231,9 +231,10 @@ function PlanetBackdrop() {
     >
       {/* Saturn ring trasero — pasa por DETRÁS del planeta. Posicionado
           directamente en el viewport (no dentro del wrapper) para que sus
-          extremos lleguen libremente a los lados sin ser cortados. */}
+          extremos lleguen libremente a los lados sin ser cortados.
+          Inclinado en diagonal para perspectiva tipo Saturno. */}
       <div
-        className="absolute"
+        className="absolute origin-center"
         style={{
           left: "-12vw",
           right: "-12vw",
@@ -243,20 +244,22 @@ function PlanetBackdrop() {
           borderRadius: "50%",
           filter: "blur(0.8px)",
           opacity: 0.55,
+          transform: "rotate(-5deg)",
         }}
       />
       {/* segundo aro fino más afuera (división tipo Saturno) */}
       <div
-        className="absolute"
+        className="absolute origin-center"
         style={{
           left: "-10vw",
           right: "-10vw",
-          top: "10.2vw",
+          top: "10.6vw",
           height: "1.6vw",
           background: ringGradient,
           borderRadius: "50%",
           filter: "blur(0.4px)",
           opacity: 0.5,
+          transform: "rotate(-5deg)",
         }}
       />
 
@@ -383,7 +386,7 @@ function PlanetBackdrop() {
       {/* Saturn ring DELANTE — la franja que cruza por delante del horizonte
           visible del planeta (solo el segmento que cubre el planeta). */}
       <div
-        className="absolute"
+        className="absolute origin-center"
         style={{
           left: "30vw",
           right: "30vw",
@@ -400,6 +403,7 @@ function PlanetBackdrop() {
           filter: "blur(0.4px)",
           mixBlendMode: "screen",
           opacity: 0.7,
+          transform: "rotate(-5deg)",
         }}
       />
     </div>
