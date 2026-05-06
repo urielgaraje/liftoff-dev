@@ -9,7 +9,9 @@
 
 Tag `stage-1-typing-v1` en `main` (commit `948979f`). Arquitectura acoplable de etapas + primera etapa (typing race) end-to-end. 6 unit tests + 4 E2E (chromium + firefox) verdes en ~37s.
 
-**Commit más reciente** (`c1116e7`, ya pushed): fix UX del banner "Planeta alcanzado" del host (z-index + duración + visibilidad), Player End con TOP 3 del leaderboard, y simplify pass (constante `STAGE_ENDED_BANNER_DURATION_MS`, `EndedView` con prop mínimo, guards no-op en `useRoomChannel`, dead code borrado).
+**Commit más reciente** (`7acda09`): fix del player fantasma al cerrar pestaña (`pagehide` + `navigator.sendBeacon` → `/api/room/[code]/leave` desde `JoinedView`); harness ampliado con G7/G8/G9 sobre Vercel CLI (sandbox no persiste OAuth → `VERCEL_TOKEN`, `vercel env add` bulk con `""` para Preview, redeploy con `--scope`); deploy de producción verde y verificado (`https://liftoff-app-dev.vercel.app/` → HTTP 200).
+
+**Commit anterior** (`c1116e7`): fix UX del banner "Planeta alcanzado" del host (z-index + duración + visibilidad), Player End con TOP 3 del leaderboard, y simplify pass (constante `STAGE_ENDED_BANNER_DURATION_MS`, `EndedView` con prop mínimo, guards no-op en `useRoomChannel`, dead code borrado).
 
 ### URLs
 
@@ -107,6 +109,7 @@ Migración: `drizzle/0001_talented_randall_flagg.sql`.
 - **Anti-cheat typing** = `validateProgress`: monotónico, techo 25 chars/s, `≤ paragraph.length`.
 - **Hook realtime único por árbol** = lift `useRoomChannel` al ancestro común, prop-drill de `room`.
 - **Word list typing** = 5 párrafos en español ≥200 palabras (`words.ts`). Sin niveles ni inglés.
+- **Cleanup de jugador fantasma** = `pagehide` + `navigator.sendBeacon` → `/leave` en `JoinedView` (`src/app/play/play-client.tsx`). Trade-off aceptado: F5 también remueve al player; refresh = re-join. Si en el futuro queremos sobrevivir el F5, ir a heartbeat + TTL server-side.
 
 ---
 
@@ -157,7 +160,6 @@ curl -s -o /dev/null -w "%{http_code}\n" https://liftoff-app-dev.vercel.app/api/
 ## Pendientes cosméticos / deuda técnica
 
 - Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico).
-- Cerrar pestaña del player no llama `/leave` automáticamente — fantasma en lobby. Fix futuro: `beforeunload` con `navigator.sendBeacon` al endpoint `/leave`.
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
 - Diseño pixel-perfect: el `.pen` tiene afinaciones que aún no están en código (gradients, glow del top de podio, etc.). No bloquea, lo abordamos en `endgame-v1` o un slice de polish.
 - Animaciones: ni canvas stars ni motion trails Framer todavía. Para `endgame-v1`.
