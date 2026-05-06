@@ -212,69 +212,158 @@ function PlanetBackdrop() {
       style={{ zIndex: 0 }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute left-1/2 -translate-x-1/2"
         style={{
-          top: "-160vw",
-          width: "190vw",
-          height: "190vw",
+          top: "-72vw",
+          width: "85vw",
+          height: "85vw",
         }}
       >
-        {/* base esfera sólida (terreno) */}
+        {/* Saturn rings — anillo trasero (asoma por arriba/a los lados del planeta) */}
         <div
-          className="size-full rounded-full"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{
-            background: `
-              radial-gradient(circle at 50% 78%, #5fbe9a 0%, #3d9a78 12%, #2c7a5f 28%, #1d5247 48%, #0f2e30 70%, #06141c 90%)
-            `,
-            boxShadow: `
-              0 0 160px rgba(52,211,153,0.35),
-              0 0 320px rgba(52,211,153,0.2)
-            `,
+            width: "165%",
+            height: "13%",
+            transform: "translate(-50%, -50%) rotate(-7deg)",
+            background: `linear-gradient(to right,
+              transparent 0%,
+              transparent 6%,
+              rgba(155,180,140,0.55) 14%,
+              rgba(220,235,200,0.75) 22%,
+              rgba(170,195,150,0.55) 30%,
+              transparent 42%,
+              transparent 58%,
+              rgba(170,195,150,0.55) 70%,
+              rgba(220,235,200,0.75) 78%,
+              rgba(155,180,140,0.55) 86%,
+              transparent 94%,
+              transparent 100%
+            )`,
+            borderRadius: "50%",
+            filter: "blur(0.5px)",
           }}
         />
-        {/* manchas continentales (textura) */}
+
+        {/* base esfera sólida verde (Saturno-like) */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(ellipse 24% 14% at 32% 76%, rgba(20,60,50,0.7) 0%, transparent 70%),
-              radial-gradient(ellipse 18% 10% at 60% 84%, rgba(15,50,42,0.65) 0%, transparent 70%),
-              radial-gradient(ellipse 12% 8% at 70% 72%, rgba(95,190,154,0.45) 0%, transparent 70%),
-              radial-gradient(ellipse 16% 10% at 25% 88%, rgba(95,190,154,0.4) 0%, transparent 70%),
-              radial-gradient(ellipse 10% 6% at 50% 70%, rgba(20,55,48,0.55) 0%, transparent 70%)
+              radial-gradient(circle at 50% 78%, #74dab0 0%, #4ebd8e 13%, #339f73 28%, #1f785a 50%, #0c3a32 75%, #061018 96%)
+            `,
+            boxShadow: `
+              0 0 140px rgba(80,210,160,0.28),
+              0 0 280px rgba(80,210,160,0.15)
+            `,
+          }}
+        />
+
+        {/* bandas atmosféricas finas (estilo gaseoso) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              repeating-linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(160,225,195,0.10) 1.4%,
+                transparent 2.8%,
+                rgba(15,75,55,0.24) 4.2%,
+                transparent 6%,
+                rgba(70,160,115,0.13) 7.5%,
+                transparent 11%
+              )
             `,
             mixBlendMode: "overlay",
           }}
         />
-        {/* sombra terminator (lado oscuro) */}
+
+        {/* bandas más anchas — claros y oscuros que dan textura tipo Júpiter/Saturno */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(circle at 50% 78%, transparent 0%, transparent 35%, rgba(0,8,12,0.55) 75%, rgba(0,4,8,0.92) 100%)
+              radial-gradient(ellipse 110% 7% at 50% 60%, rgba(180,230,200,0.22) 0%, transparent 75%),
+              radial-gradient(ellipse 110% 5% at 50% 67%, rgba(15,70,50,0.32) 0%, transparent 75%),
+              radial-gradient(ellipse 110% 8% at 50% 75%, rgba(80,180,130,0.18) 0%, transparent 80%),
+              radial-gradient(ellipse 110% 5% at 50% 84%, rgba(15,55,40,0.36) 0%, transparent 75%),
+              radial-gradient(ellipse 110% 6% at 50% 91%, rgba(110,200,160,0.18) 0%, transparent 80%)
+            `,
+            mixBlendMode: "multiply",
+          }}
+        />
+
+        {/* polos más oscuros */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              radial-gradient(ellipse 70% 14% at 50% 100%, rgba(0,18,12,0.55) 0%, transparent 75%),
+              radial-gradient(ellipse 70% 14% at 50% 0%, rgba(0,18,12,0.5) 0%, transparent 75%)
             `,
           }}
         />
-        {/* highlight especular (luz cenital) */}
+
+        {/* terminator (oscurece lateralmente para sensación de esfera) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              radial-gradient(circle at 50% 80%, transparent 0%, transparent 32%, rgba(0,8,12,0.5) 72%, rgba(0,4,8,0.9) 100%)
+            `,
+          }}
+        />
+
+        {/* highlight especular */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(ellipse 38% 18% at 45% 90%, rgba(220,255,235,0.22) 0%, transparent 70%)",
+              "radial-gradient(ellipse 32% 14% at 48% 92%, rgba(225,255,235,0.32) 0%, transparent 70%)",
             mixBlendMode: "screen",
           }}
         />
-        {/* atmósfera exterior */}
+
+        {/* atmósfera exterior pulsante */}
         <motion.div
-          animate={{ opacity: [0.45, 0.7, 0.45] }}
+          animate={{ opacity: [0.5, 0.75, 0.5] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-[-2%] rounded-full"
+          className="absolute inset-[-2.5%] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, transparent 49%, rgba(80,210,160,0.22) 50.5%, rgba(80,210,160,0.08) 53%, transparent 56%)",
+              "radial-gradient(circle, transparent 48%, rgba(110,220,170,0.28) 50.5%, rgba(110,220,170,0.1) 53%, transparent 57%)",
+          }}
+        />
+
+        {/* Saturn rings — parte delantera (cruza por delante del planeta) */}
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{
+            width: "172%",
+            height: "11%",
+            transform: "translate(-50%, calc(-50% + 1.2%)) rotate(-7deg)",
+            background: `linear-gradient(to right,
+              transparent 0%,
+              transparent 16%,
+              rgba(170,195,150,0.0) 22%,
+              rgba(190,215,170,0.55) 30%,
+              rgba(235,245,215,0.75) 38%,
+              rgba(170,195,150,0.5) 45%,
+              transparent 50%,
+              transparent 50%,
+              rgba(170,195,150,0.5) 55%,
+              rgba(235,245,215,0.75) 62%,
+              rgba(190,215,170,0.55) 70%,
+              transparent 78%,
+              transparent 100%
+            )`,
+            borderRadius: "50%",
+            filter: "blur(0.4px)",
+            mixBlendMode: "screen",
           }}
         />
       </motion.div>
