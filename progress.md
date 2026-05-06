@@ -5,9 +5,9 @@
 
 ---
 
-## Estado: `vertical-slice-v1`
+## Estado: `stage-1-typing-v1`
 
-Tag `vertical-slice-v1` en `main`. Pipa completa validada de extremo a extremo: DB Neon → API → Pusher realtime → UI → E2E multi-browser (chromium + firefox). 3 contextos Playwright simultáneos sincronizan vía Pusher en <2s. Aún sin etapas de juego.
+Tag `stage-1-typing-v1` en `main`. Arquitectura acoplable de etapas + primera etapa (typing race) end-to-end. 6 unit tests + 4 E2E (chromium + firefox) verdes en ~50s.
 
 ### URLs
 
@@ -17,130 +17,145 @@ Tag `vertical-slice-v1` en `main`. Pipa completa validada de extremo a extremo: 
 
 ---
 
-## Lo que está hecho
+## Slices anteriores
 
-### Slice anterior (`starter-rich-v1`)
+- `starter-rich-v1` → scaffold + servicios externos.
+- `vertical-slice-v1` → Landing + Player Join + Lobby + sync Pusher (DB → API → realtime → UI → E2E).
 
-Scaffold + servicios externos (Neon, Pusher, Vercel). Sin features.
+---
 
-### Este slice (`vertical-slice-v1`)
+## Lo que aporta `stage-1-typing-v1`
 
-#### Schema (Drizzle)
+### Arquitectura acoplable de etapas
 
+Cada etapa es un `StageModule` (`src/lib/game/stages/types.ts`):
+
+```ts
+interface StageModule<Init = unknown> {
+  id: string;
+  durationMs: number;
+  scoreMultiplier: number;
+  buildInit(): Init;
+  validateProgress({ prev, next, elapsedMs }): boolean;
+}
 ```
-rooms (id uuid, code varchar(4) unique, status enum lobby|racing|ended, created_at)
-players (id uuid, room_id fk, nickname, rocket_skin, joined_at)
+
+Las etapas se registran en `STAGES[]` (`src/lib/game/stages/index.ts`). Añadir una nueva etapa = `import` del módulo + `push` al array. Cero cambios en motor, API, UI engine, schema. El componente cliente que pinta la etapa se registra en `RENDERERS` (`src/components/game/stages/index.tsx`); si no hay renderer, fallback a `<UnknownStage>`.
+
+Por ahora el array contiene solo `typingStage` (`src/lib/game/stages/typing/typing.ts`).
+
+### Schema (cambios)
+
+```sql
+ALTER TABLE rooms ADD COLUMN current_stage_index int NOT NULL DEFAULT -1;
+ALTER TABLE rooms ADD COLUMN stage_started_at timestamptz NULL;
+ALTER TABLE rooms ADD COLUMN stage_init jsonb NULL;
+
+CREATE TABLE scores (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id uuid NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+  player_id uuid NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  stage_index int NOT NULL,
+  value int NOT NULL DEFAULT 0,
+  completed_at timestamptz NULL,
+  UNIQUE (player_id, stage_index)
+);
 ```
 
-Migración `drizzle/0000_parallel_chronomancer.sql` aplicada a Neon.
+Migración: `drizzle/0001_talented_randall_flagg.sql`.
 
-#### API routes
+### API routes (nuevas)
 
-- `POST /api/room` — host crea room (cierra cualquier room activa antes), set cookie `liftoff_host` HMAC-firmada.
-- `GET /api/room/[code]` — snapshot (status + players ordenados por joined_at).
-- `POST /api/room/[code]/join` — player insert + cookie `liftoff_player_<code>` + Pusher `player-joined`.
-- `POST /api/room/[code]/leave` — player delete + Pusher `player-left` (usado para futuros tests/cleanups).
+- `POST /api/room/[code]/start` — host crea partida (cookie host validada). Set `currentStageIndex=0`, `stageStartedAt=now()`, `stageInit=stages[0].buildInit()`. Broadcast `stage-started`.
+- `POST /api/room/[code]/progress` — player (cookie player). Valida monotónico + 25 chars/s techo + ≤ longitud paragraph. Upsert con `GREATEST(existing, next)`. Broadcast `progress-updated`.
+- `POST /api/room/[code]/end-stage` — idempotente. 409 si stage no expirado o índice mismatch. Si OK: marca `completedAt`, avanza al siguiente stage o pasa la sala a `ended`. Broadcast `stage-ended` (+ `stage-started` del siguiente si lo hay).
 
-Validación con `zod`. Auth host = passphrase env + HMAC-SHA256 cookie (`HOST_COOKIE_SECRET`).
+`GET /api/room/[code]` ampliado para devolver también `stage` y `progress` cuando la sala está en racing.
 
-#### Pusher
+### Pusher (nuevos eventos)
 
-- Canal único `room-<code>`.
-- Eventos: `player-joined`, `player-left`, `room-updated` (este último con contrato listo, sin uso aún).
-- Helper `broadcast(code, event, payload)` server-side.
-- Hook `useRoomChannel(code)` cliente: snapshot inicial vía GET + merge incremental.
+- `stage-started` `{ stageIndex, stageId, durationMs, init, startedAt }`
+- `progress-updated` `{ playerId, stageIndex, value }`
+- `stage-ended` `{ stageIndex, leaderboard, nextStageIndex }`
 
-#### UI
+### UI
 
-- **Landing** (`src/app/(public)/page.tsx`) — Hero, dos formularios (Soy host / Soy jugador). Sin Dialog: ambos inline para minimizar piezas.
-- **`/host`** (`src/app/host/page.tsx` + `host-client.tsx`) — Server component verifica cookie, redirect a `/` si falta. Render: code XXL Geist Mono, URL pill, botón "Copiar URL", lista players live, botón "Iniciar carrera" disabled.
-- **`/play?code=XXXX`** (`src/app/play/page.tsx` + `play-client.tsx`) — State machine `pre-join` → `lobby`. Form nickname + 8 skins (lucide Rocket × tokens `rocket-*`). Lobby muestra flota live.
-- **Mobile gate** — bloqueo CSS `<1024px` aplicado en `src/app/layout.tsx` (no UA sniff).
-- Componentes nuevos: `Rocket` (game/) y `RoomBadge` (shared/).
+- **Landing** y **Player Join**: sin cambios.
+- **Player `/play`** (state machine ampliada en `play-client.tsx`): `pre-join → joined`. `joined` decide entre `LobbyView | StageRenderer | EndedView` según `room.status`/`room.stage`.
+  - `TypingStage` (`src/components/game/stages/typing/typing-stage.tsx`): keydown global, validación char-a-char, errores no atravesables, throttle progress 500ms, timer cliente, POST `/end-stage` al hit 0.
+  - `TypingParagraph`: pinta el párrafo con cursor magenta y flash rojo en error.
+- **Host `/host`**: ahora vía `HostRouter` que decide entre `HostPreGame` y `HostBroadcast` según `room.status`. **El hook `useRoomChannel` se llama UNA sola vez en `HostRouter` y se prop-drillea** — si lo llamaba cada componente, el `pusher.unsubscribe` del que se desmontaba mataba la suscripción del otro.
+  - `HostBroadcast`: top-8 cohetes con altura proporcional al líder (CSS transform), leaderboard lateral 50, timer countdown, banner "PLANETA ALCANZADO" 1.5s al `stage-ended`, footer "carrera completada" al final.
 
-#### Auth
+### Tests
 
-- `src/lib/auth/host.ts` — sign/verify cookie HMAC, set/clear, `getHostRoomId()`, `checkHostPassphrase()` con `timingSafeEqual`.
-- `src/lib/auth/player.ts` — cookie `liftoff_player_<code>` (no firmada, solo identifica al cliente).
-
-#### Tests
-
-- E2E `src/e2e/lobby.spec.ts`: 3 contextos (host + 2 players) — host crea, players entran en paralelo, todos se ven mutuamente. Pasa en chromium y firefox.
-- Unit: 0 tests aún (decisión: la lógica de negocio de este slice es trivial, los tests E2E ya cubren la pipa).
-
-#### Diseño
-
-`design/liftoff.pen` actualizado: frame `vADag` (Landing) con joinForm añadido y copy QR removido; frame `dIApO` (Host Pre-game) con `qrCard` reemplazado por `codeDisplay` + `urlPill` + `copyBtn`. Diseño y código alineados.
+- **Unit** `src/lib/game/stages/typing/typing.test.ts`: 6 tests de `validateProgress` y `buildInit`.
+- **E2E** `src/e2e/stage1.spec.ts`: 3 contextos (host + alice + bob). Host inicia, ambos teclean (alice 30 chars, bob 10), leaderboard ordenado correcto, sala pasa a `ended`, vista `play-ended` visible para ambos players.
+- E2E lobby (`lobby.spec.ts`) sigue pasando.
+- `playwright.config.ts`: `workers: 1` y `fullyParallel: false` porque ambos specs comparten el invariante "una sola sala activa" del backend; sin esto compitan por la misma sala.
+- `webServer.env.STAGE_DURATION_OVERRIDE_MS = "3000"` para que la stage dure 3s en tests (vs 30s en dev).
 
 ---
 
 ## Decisiones cerradas en este slice
 
-- **Layout `/play`**: state machine en una sola page (no rutas separadas) — evita reconnects de Pusher.
-- **Canal Pusher**: único `room-<code>` con eventos filtrados por nombre.
-- **Auth host**: passphrase env + cookie HMAC. Sin tabla de sesiones, sin bcrypt — mínimo viable.
-- **Room code**: 4 chars uppercase, alfabeto `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (sin `0/O/1/I`).
-- **QR del Host Pre-game**: eliminado (renegociación de mission §Vistas — desktop-only). Sustituido por code XXL + URL copyable.
-- **Salas activas**: sólo una con status `lobby` o `racing` a la vez. Crear nueva → la anterior se marca `ended`.
-
----
-
-## Lo que NO está hecho
-
-- **Stages de juego**: cero. Falta typing race, anagrama, memoria.
-- **Tablas `scores` y `events`**: no creadas. Schema actual sólo tiene rooms + players.
-- **Animaciones**: cero canvas (stars background), cero motion trails. Estático puro.
-- **Player End / Host Podium**: vistas no implementadas.
-- **Word lists del typing race**: no decidido idioma/longitud/dificultad.
-- **Anti-cheat thresholds**: pendiente de medir reales.
-- **Auth host robusta**: bcrypt + tabla de sesiones — promotable cuando haga falta.
+- **Stages timer-driven** con duración por módulo. Planeta = flair visual al cerrar timer (no objetivo binario de score).
+- **Cierre de etapa** = cliente-driven idempotente vía `POST /end-stage`. 409 si pronto o mismatch.
+- **Persistencia de progreso** = upsert por throttle a `scores` con `GREATEST(existing, next)`.
+- **Anti-cheat typing** = `validateProgress`: monotónico, techo 25 chars/s, `≤ paragraph.length`.
+- **Hook realtime único por árbol** = lift `useRoomChannel` al ancestro común, prop-drill de `room`.
+- **Word list typing** = 5 párrafos en español ≥200 palabras (`words.ts`). Sin niveles ni inglés.
 
 ---
 
 ## Cómo continuar
 
-### Próxima decisión: cuál de las 3 etapas atacar primero
+### Próximo slice: `stage-2-anagram-v1`
 
-Recomendación: **Stage 1 — Typing race**, porque (a) la mission lo lista primero, (b) es la más simple mecánicamente, (c) ya tenemos el copy literal del placeholder en el `.pen`.
+El esfuerzo estimado es bajo: la arquitectura está montada. Pasos previstos:
 
-Plan de tareas tentativo para `stage-1-typing-v1`:
+1. `src/lib/game/stages/anagram/anagram.ts` con `StageModule`. `buildInit()` devuelve `{ letters: string[] }` (7 letras seleccionadas para que tengan al menos N palabras válidas). `validateProgress`: rate-limit razonable de envíos (palabras/s).
+2. Diccionario español de palabras válidas (set de strings) en `src/lib/game/stages/anagram/dictionary.ts` o similar.
+3. Endpoint POST `/api/room/[code]/anagram-submit` (o reutilizar `progress` con un payload extendido — decidir al implementar).
+4. `<AnagramStage>` cliente: 7 tiles clicables, palabra en formación, lista de palabras válidas, ⏎ valida, ⌫ borra.
+5. Registrar en `RENDERERS` y añadir `anagramStage` a `STAGES[]`.
+6. E2E corto: `stage2.spec.ts`.
 
-- Schema: tabla `scores` (player_id, room_id, stage, value, created_at) + `events` (room_id, type, payload, created_at) si decidimos auditar.
-- Server: state machine de partida (lobby → racing-stage-1 → … → ended). Probablemente endpoint `POST /api/room/[code]/start`.
-- Pusher events: `stage-started`, `tick`, `stage-ended`.
-- Word lists: decidir `es` short list para empezar; archivo JSON estático en `src/lib/game/words/`.
-- UI Player Game stage 1 (typing): vista del `.pen`, captura `keydown`, validación letra a letra, anti-cheat trivial (chars/s máximo).
-- UI Host Broadcast: 8 cohetes top + leaderboard 50.
-- E2E: 3 players completan stage 1, podio coherente.
+Stage 3 (memoria) y endgame (`Player End` + `Host Podium` + share PNG + animaciones) son los slices que cierran la mission.
 
 ### Si arrancas en sesión nueva (cold start)
 
 1. `mission.md` — qué construimos.
-2. `CLAUDE.md` — cómo (stack, naming, anti-patterns).
-3. `harness.md` — estado de la infra + gotchas.
-4. **este archivo** — dónde nos quedamos.
-5. `design/liftoff.pen` vía Pencil MCP — las vistas.
-6. `git log --oneline -10` — historia reciente.
+2. `CLAUDE.md` — convenciones + decisiones cerradas (al final).
+3. `harness.md` — infra + gotchas.
+4. **este archivo** — dónde estamos.
+5. `design/liftoff.pen` vía Pencil MCP — vistas pendientes (anagrama, memoria, end, podio).
+6. `git log --oneline -10` — historia.
 
 Verificaciones rápidas:
 
 ```bash
 pnpm typecheck && pnpm build
-pnpm test:e2e            # debería pasar en <30s, chromium + firefox
-/usr/bin/curl -s -o /dev/null -w "%{http_code}\n" https://liftoff-app-dev.vercel.app/api/health
+pnpm vitest run
+pnpm test:e2e
+curl -s -o /dev/null -w "%{http_code}\n" https://liftoff-app-dev.vercel.app/api/health
 ```
 
 ---
 
 ## Decisiones aún abiertas
 
-- **Word lists del typing race**: idioma + 3 niveles de dificultad. Sin decidir.
-- **Anti-cheat thresholds**: chars/s en typing, clicks/s en Simon. Sin decidir, depende de medición real.
-- **Auth host robusta**: cuándo promover a bcrypt + tabla de sesiones. Por ahora sobra con env+HMAC.
+- **Anti-cheat anagrama / memoria**: thresholds dependen de medir reales.
+- **Word lists multilingües y por dificultad**: `en` + niveles short/medium/long.
+- **Bonus top-3 por etapa** al score total final (mission `score_total = ... + bonus_top3_por_etapa`).
+- **Auth host robusta**: cuándo promover a bcrypt + tabla de sesiones.
 
 ---
 
-## Pendientes cosméticos sin resolver
+## Pendientes cosméticos / deuda técnica
 
-- Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico, GitHub no permite borrar status checks).
-- Screenshots `s*-*.png` en raíz: regenerar tras la actualización del `.pen` si los seguimos usando en docs.
+- Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico).
+- Cerrar pestaña del player no llama `/leave` automáticamente — fantasma en lobby. Fix futuro: `beforeunload` con `navigator.sendBeacon` al endpoint `/leave`.
+- Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
+- Diseño pixel-perfect: el `.pen` tiene afinaciones que aún no están en código (gradients, glow del top de podio, etc.). No bloquea, lo abordamos en `endgame-v1` o un slice de polish.
+- Animaciones: ni canvas stars ni motion trails Framer todavía. Para `endgame-v1`.

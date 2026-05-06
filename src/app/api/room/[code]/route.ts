@@ -1,8 +1,9 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { players, rooms } from "@/lib/db/schema";
+import { players, rooms, scores } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
+import { getStage } from "@/lib/game/stages";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,35 @@ export async function GET(
     .where(eq(players.roomId, room.id))
     .orderBy(asc(players.joinedAt));
 
+  let stage = null;
+  let progress: Record<string, number> = {};
+  if (
+    room.status === "racing" &&
+    room.currentStageIndex >= 0 &&
+    room.stageStartedAt
+  ) {
+    const def = getStage(room.currentStageIndex);
+    if (def) {
+      stage = {
+        stageIndex: room.currentStageIndex,
+        stageId: def.id,
+        durationMs: def.durationMs,
+        init: room.stageInit,
+        startedAt: room.stageStartedAt.toISOString(),
+      };
+      const rows = await db
+        .select({ playerId: scores.playerId, value: scores.value })
+        .from(scores)
+        .where(
+          and(
+            eq(scores.roomId, room.id),
+            eq(scores.stageIndex, room.currentStageIndex),
+          ),
+        );
+      progress = Object.fromEntries(rows.map((r) => [r.playerId, r.value]));
+    }
+  }
+
   return NextResponse.json({
     code: room.code,
     status: room.status,
@@ -41,5 +71,7 @@ export async function GET(
       rocketSkin: p.rocketSkin,
       joinedAt: p.joinedAt.toISOString(),
     })),
+    stage,
+    progress,
   });
 }

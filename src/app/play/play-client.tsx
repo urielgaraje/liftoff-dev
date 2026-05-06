@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Rocket } from "@/components/game/rocket";
 import { RoomBadge } from "@/components/shared/room-badge";
+import { StageRenderer } from "@/components/game/stages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,12 +15,12 @@ import {
 import { useRoomChannel } from "@/lib/realtime/use-room-channel";
 import { cn } from "@/lib/utils";
 
-type Stage = "pre-join" | "lobby";
+type Local = "pre-join" | "joined";
 
 type Props = { code: string; alreadyJoined: boolean };
 
 export function PlayClient({ code, alreadyJoined }: Props) {
-  const [stage, setStage] = useState<Stage>(alreadyJoined ? "lobby" : "pre-join");
+  const [local, setLocal] = useState<Local>(alreadyJoined ? "joined" : "pre-join");
   const [nickname, setNickname] = useState("");
   const [skin, setSkin] = useState<RocketSkin>("cyan");
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function PlayClient({ code, alreadyJoined }: Props) {
         setError(body.error ?? "Error al unirte");
         return;
       }
-      setStage("lobby");
+      setLocal("joined");
     } catch {
       setError("Error de red");
     } finally {
@@ -53,7 +54,7 @@ export function PlayClient({ code, alreadyJoined }: Props) {
     }
   };
 
-  if (stage === "pre-join") {
+  if (local === "pre-join") {
     return (
       <main className="flex min-h-screen flex-col bg-bg-primary">
         <header className="flex items-center justify-between p-6">
@@ -135,11 +136,47 @@ export function PlayClient({ code, alreadyJoined }: Props) {
     );
   }
 
-  return <LobbyView code={code} />;
+  return <JoinedView code={code} />;
 }
 
-function LobbyView({ code }: { code: string }) {
+function JoinedView({ code }: { code: string }) {
   const room = useRoomChannel(code);
+
+  if (room.loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg-primary">
+        <p className="font-mono text-xs text-fg-muted">cargando…</p>
+      </main>
+    );
+  }
+
+  if (room.status === "racing" && room.stage) {
+    return (
+      <StageRenderer
+        code={code}
+        stageId={room.stage.stageId}
+        stageIndex={room.stage.stageIndex}
+        startedAt={room.stage.startedAt}
+        durationMs={room.stage.durationMs}
+        init={room.stage.init}
+      />
+    );
+  }
+
+  if (room.status === "ended") {
+    return <EndedView code={code} />;
+  }
+
+  return <LobbyView code={code} room={room} />;
+}
+
+function LobbyView({
+  code,
+  room,
+}: {
+  code: string;
+  room: ReturnType<typeof useRoomChannel>;
+}) {
   const ready = room.players.length;
 
   return (
@@ -201,6 +238,21 @@ function LobbyView({ code }: { code: string }) {
 
         <p className="font-mono text-xs text-fg-muted">esperando al host</p>
       </div>
+    </main>
+  );
+}
+
+function EndedView({ code }: { code: string }) {
+  return (
+    <main
+      className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-8 text-center"
+      data-testid="play-ended"
+    >
+      <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">LIFTOFF</p>
+      <h1 className="text-3xl font-medium text-fg-primary">Carrera completada</h1>
+      <p className="font-mono text-xs text-fg-muted">
+        Sala {code} · podio en slice posterior
+      </p>
     </main>
   );
 }

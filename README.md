@@ -28,7 +28,7 @@ liftoff/
 
 ## Estado
 
-`vertical-slice-v1`. Pipa completa probada de extremo a extremo (DB Neon → API → Pusher realtime → UI → E2E multi-browser). Landing real + Host Pre-game + Player Join + Player Lobby con sync en vivo. Sin etapas de juego aún. Ver `progress.md` para detalle.
+`stage-1-typing-v1`. Primera mecánica de juego (typing race) con arquitectura acoplable: cada etapa es un módulo registrado en un array; añadir más etapas no toca el motor. Host Broadcast básico con top-8 cohetes + leaderboard 50. Etapas siguientes (anagrama, memoria, podio) en slices posteriores. Ver `progress.md` para detalle.
 
 App: https://liftoff-app-dev.vercel.app/
 

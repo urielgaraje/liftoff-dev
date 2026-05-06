@@ -158,7 +158,17 @@ Cerradas en `vertical-slice-v1`:
 - ✅ **Auth host** → passphrase env var plano + cookie httpOnly firmada con HMAC (`HOST_COOKIE_SECRET`). Promotable a bcrypt+sesiones cuando haga falta.
 - ✅ **QR del Host Pre-game** → eliminado (renegociación de mission §Vistas: el juego es desktop-only por el typing). Sustituido por code XXL + URL pill + botón "Copiar URL".
 
+Cerradas en `stage-1-typing-v1`:
+
+- ✅ **Stages timer-driven** con duración configurable por módulo. No hay "score fijo para llegar al planeta" — el timer es el final, el planeta es flair visual.
+- ✅ **Word list del typing race** → 5 párrafos en español (≥200 palabras cada uno) en `src/lib/game/stages/typing/words.ts`. Sin niveles de dificultad por ahora; multilingüe pendiente.
+- ✅ **Anti-cheat typing** → `value` monotónico + techo 25 chars/s + `value ≤ paragraph.length` (server-side `validateProgress`).
+- ✅ **Stages acoplables** → cada etapa es un `StageModule` registrado en `STAGES[]` (`src/lib/game/stages/index.ts`). Añadir etapa = `import` + `STAGES.push(...)`.
+- ✅ **Cierre de etapa** → cliente-driven idempotente: primer POST a `/end-stage` después de `stageStartedAt + duration` procede; el resto recibe 409.
+- ✅ **Realtime hook único por código** → `useRoomChannel(code)` se llama UNA sola vez por árbol de componentes y `room` se prop-drillea (evita race con Pusher unsubscribe compartido).
+
 Aún abiertas:
 
-- **Word lists** del typing race: idioma, longitud, dificultad. Probablemente `en` y `es` con 3 niveles (corto / medio / largo).
-- **Anti-cheat exact thresholds**: cuántos chars/s bloquean en el typing race; cuántos clicks/s en Simon.
+- **Anti-cheat anagrama / memoria**: cuántos clicks/s, palabras inválidas penalizadas, etc. Sin decidir.
+- **Word lists multilingües y por dificultad**: `en` y niveles short/medium/long.
+- **Bonus top-3 por etapa** al score total final.

@@ -8,6 +8,13 @@
       "when": 1778087544305,
       "tag": "0000_parallel_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778090172072,
+      "tag": "0001_talented_randall_flagg",
+      "breakpoints": true
     }
   ]
 }

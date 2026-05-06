@@ -1,0 +1,167 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Rocket } from "@/components/game/rocket";
+import { type RocketSkin } from "@/lib/game/skins";
+import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
+import { cn } from "@/lib/utils";
+
+const TOP_VISIBLE = 8;
+
+type Props = {
+  code: string;
+  room: ReturnType<typeof useRoomChannel>;
+};
+
+export function HostBroadcast({ room }: Props) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 200);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const stage = room.stage;
+  const remainingMs = stage
+    ? Math.max(0, stage.durationMs - (now - new Date(stage.startedAt).getTime()))
+    : 0;
+  const remainingS = Math.ceil(remainingMs / 1000);
+
+  const playersById = useMemo(() => {
+    return Object.fromEntries(room.players.map((p) => [p.id, p]));
+  }, [room.players]);
+
+  const ranked = useMemo(() => {
+    const items = room.players.map((p) => ({
+      ...p,
+      value: room.progress[p.id] ?? 0,
+    }));
+    items.sort((a, b) => b.value - a.value || a.nickname.localeCompare(b.nickname));
+    return items;
+  }, [room.players, room.progress]);
+
+  const topValue = ranked[0]?.value ?? 0;
+  const top8 = ranked.slice(0, TOP_VISIBLE);
+
+  const showStageEndedBanner =
+    room.lastEnded !== null && now - room.lastEnded.endedAt < 1500;
+
+  return (
+    <main className="flex min-h-screen flex-col bg-bg-primary">
+      <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
+        <p
+          className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+          data-testid="broadcast-header"
+        >
+          {room.status === "ended"
+            ? "LIFTOFF · CARRERA COMPLETADA"
+            : `STAGE ${stage ? stage.stageIndex + 1 : "?"} · ${
+                stage?.stageId.toUpperCase() ?? ""
+              }`}
+        </p>
+        <div className="flex items-center gap-3">
+          {stage && room.status === "racing" && (
+            <div
+              className="rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary"
+              data-testid="broadcast-timer"
+            >
+              QUEDAN {remainingS}s
+            </div>
+          )}
+          <div className="rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
+            {room.players.length}/50
+          </div>
+        </div>
+      </header>
+
+      <div className="grid flex-1 grid-cols-[1fr_360px]">
+        <section className="relative flex flex-col items-center justify-end overflow-hidden p-12">
+          <div
+            className="pointer-events-none absolute top-1/2 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-cyan/10 blur-3xl"
+            aria-hidden
+          />
+          {showStageEndedBanner && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-bg-secondary px-8 py-6 ring-1 ring-accent-cyan">
+              <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
+                STAGE COMPLETADA
+              </p>
+              <p className="mt-2 text-2xl text-fg-primary">Planeta alcanzado</p>
+            </div>
+          )}
+          <div
+            className="relative grid w-full max-w-3xl grid-cols-4 gap-6"
+            data-testid="broadcast-rockets"
+          >
+            {top8.map((p) => {
+              const ratio = topValue > 0 ? p.value / topValue : 0;
+              const lift = Math.round(ratio * 200);
+              return (
+                <div
+                  key={p.id}
+                  data-testid={`broadcast-rocket-${p.nickname}`}
+                  className="flex flex-col items-center gap-2 transition-transform duration-300 ease-out"
+                  style={{ transform: `translateY(-${lift}px)` }}
+                >
+                  <Rocket skin={p.rocketSkin as RocketSkin} size={56} />
+                  <span className="rounded-full bg-bg-secondary px-2 py-0.5 font-mono text-xs text-fg-primary">
+                    {p.nickname}
+                  </span>
+                  <span className="font-mono text-xs text-fg-muted">{p.value}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <aside className="flex flex-col gap-2 border-l border-bg-tertiary p-6">
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs tracking-wider text-fg-muted">
+              LEADERBOARD
+            </p>
+            <p className="font-mono text-xs text-accent-cyan">
+              {room.players.length}/50
+            </p>
+          </div>
+          <ul
+            className="flex flex-col gap-1 overflow-y-auto"
+            data-testid="broadcast-leaderboard"
+          >
+            {ranked.map((p, i) => (
+              <li
+                key={p.id}
+                data-testid={`leaderboard-${p.nickname}`}
+                className={cn(
+                  "flex items-center justify-between rounded-lg px-3 py-2",
+                  i < 3 ? "bg-bg-tertiary" : "bg-bg-secondary",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-6 font-mono text-xs text-fg-muted">
+                    #{i + 1}
+                  </span>
+                  <Rocket skin={p.rocketSkin as RocketSkin} size={14} />
+                  <span className="text-sm text-fg-primary">{p.nickname}</span>
+                </div>
+                <span className="font-mono text-xs text-fg-secondary">{p.value}</span>
+              </li>
+            ))}
+            {ranked.length === 0 && (
+              <li className="rounded-lg bg-bg-secondary px-3 py-4 text-center font-mono text-xs text-fg-muted">
+                sin jugadores
+              </li>
+            )}
+          </ul>
+          {playersById && null}
+        </aside>
+      </div>
+
+      {room.status === "ended" && (
+        <footer className="flex items-center justify-center border-t border-bg-tertiary p-6">
+          <p className="font-mono text-xs tracking-wider text-fg-muted">
+            stages siguientes — slice posterior
+          </p>
+        </footer>
+      )}
+    </main>
+  );
+}

@@ -5,13 +5,34 @@ import { useState } from "react";
 import { Rocket } from "@/components/game/rocket";
 import { Button } from "@/components/ui/button";
 import { type RocketSkin } from "@/lib/game/skins";
-import { useRoomChannel } from "@/lib/realtime/use-room-channel";
+import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
 
-type Props = { code: string; playUrl: string };
+type Props = {
+  code: string;
+  playUrl: string;
+  room: ReturnType<typeof useRoomChannel>;
+};
 
-export function HostPreGame({ code, playUrl }: Props) {
-  const room = useRoomChannel(code);
+export function HostPreGame({ code, playUrl, room }: Props) {
   const [copied, setCopied] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
+
+  const onStart = async () => {
+    setStartError(null);
+    setStarting(true);
+    try {
+      const res = await fetch(`/api/room/${code}/start`, { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setStartError(body.error ?? "no se pudo iniciar");
+      }
+    } catch {
+      setStartError("error de red");
+    } finally {
+      setStarting(false);
+    }
+  };
 
   const onCopy = async () => {
     try {
@@ -96,15 +117,23 @@ export function HostPreGame({ code, playUrl }: Props) {
 
           <Button
             type="button"
-            disabled
+            onClick={onStart}
+            disabled={starting || room.players.length === 0}
             className="h-12 text-base"
             data-testid="host-start"
           >
-            Iniciar carrera
+            {starting ? "Iniciando…" : "Iniciar carrera"}
           </Button>
-          <p className="text-center font-mono text-xs text-fg-muted">
-            stages siguientes — slice posterior
-          </p>
+          {startError && (
+            <p className="text-center text-sm text-rocket-red" role="alert">
+              {startError}
+            </p>
+          )}
+          {room.players.length === 0 && !startError && (
+            <p className="text-center font-mono text-xs text-fg-muted">
+              esperando al menos un jugador
+            </p>
+          )}
         </section>
       </div>
     </main>

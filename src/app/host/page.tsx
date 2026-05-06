@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getHostRoomId } from "@/lib/auth/host";
 import { db } from "@/lib/db";
 import { rooms } from "@/lib/db/schema";
-import { HostPreGame } from "./host-client";
+import { HostRouter } from "./host-router";
 
 export const dynamic = "force-dynamic";
 
@@ -20,5 +20,5 @@ export default async function HostPage() {
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
   const playUrl = `${proto}://${host}/play?code=${room.code}`;
 
-  return <HostPreGame code={room.code} playUrl={playUrl} />;
+  return <HostRouter code={room.code} playUrl={playUrl} />;
 }
