@@ -84,24 +84,6 @@ export function HostPreGame({ code, playUrl, room }: Props) {
         </motion.p>
 
         <div className="relative flex flex-col items-center gap-5">
-          <motion.div
-            aria-hidden
-            animate={{ scale: [1, 1.05, 1], opacity: [0.45, 0.8, 0.45] }}
-            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-[-18px] rounded-3xl"
-            style={{
-              border: "1.5px solid var(--color-accent-cyan)",
-              boxShadow: "0 0 40px rgba(34,211,238,0.4)",
-              opacity: 0.55,
-            }}
-          />
-          <motion.div
-            aria-hidden
-            animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0, 0.3] }}
-            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-[-36px] rounded-3xl"
-            style={{ border: "1px solid var(--color-accent-cyan)" }}
-          />
           <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
             CÓDIGO DE SALA
           </p>
@@ -235,38 +217,64 @@ function PlanetBackdrop() {
         transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute left-1/2 -translate-x-1/2"
         style={{
-          top: "-150vw",
-          width: "180vw",
-          height: "180vw",
+          top: "-160vw",
+          width: "190vw",
+          height: "190vw",
         }}
       >
+        {/* base esfera sólida (terreno) */}
         <div
           className="size-full rounded-full"
           style={{
             background: `
-              radial-gradient(circle at 50% 70%, rgba(120,220,170,0.6) 0%, rgba(46,160,120,0.32) 25%, rgba(20,80,80,0.5) 55%, rgba(8,16,30,0.95) 100%)
+              radial-gradient(circle at 50% 78%, #5fbe9a 0%, #3d9a78 12%, #2c7a5f 28%, #1d5247 48%, #0f2e30 70%, #06141c 90%)
             `,
             boxShadow: `
-              inset 0 -90px 240px rgba(0,0,0,0.65),
-              0 0 140px rgba(52,211,153,0.32),
-              0 0 280px rgba(52,211,153,0.22)
+              0 0 160px rgba(52,211,153,0.35),
+              0 0 320px rgba(52,211,153,0.2)
             `,
           }}
         />
-        <motion.div
-          animate={{ opacity: [0.3, 0.55, 0.3] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 35% 80%, rgba(52,211,153,0.25) 0%, transparent 45%)",
-            mixBlendMode: "screen",
-          }}
-        />
+        {/* manchas continentales (textura) */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            border: "1px solid rgba(52,211,153,0.18)",
+            background: `
+              radial-gradient(ellipse 24% 14% at 32% 76%, rgba(20,60,50,0.7) 0%, transparent 70%),
+              radial-gradient(ellipse 18% 10% at 60% 84%, rgba(15,50,42,0.65) 0%, transparent 70%),
+              radial-gradient(ellipse 12% 8% at 70% 72%, rgba(95,190,154,0.45) 0%, transparent 70%),
+              radial-gradient(ellipse 16% 10% at 25% 88%, rgba(95,190,154,0.4) 0%, transparent 70%),
+              radial-gradient(ellipse 10% 6% at 50% 70%, rgba(20,55,48,0.55) 0%, transparent 70%)
+            `,
+            mixBlendMode: "overlay",
+          }}
+        />
+        {/* sombra terminator (lado oscuro) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              radial-gradient(circle at 50% 78%, transparent 0%, transparent 35%, rgba(0,8,12,0.55) 75%, rgba(0,4,8,0.92) 100%)
+            `,
+          }}
+        />
+        {/* highlight especular (luz cenital) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(ellipse 38% 18% at 45% 90%, rgba(220,255,235,0.22) 0%, transparent 70%)",
+            mixBlendMode: "screen",
+          }}
+        />
+        {/* atmósfera exterior */}
+        <motion.div
+          animate={{ opacity: [0.45, 0.7, 0.45] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-[-2%] rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle, transparent 49%, rgba(80,210,160,0.22) 50.5%, rgba(80,210,160,0.08) 53%, transparent 56%)",
           }}
         />
       </motion.div>

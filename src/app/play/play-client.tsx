@@ -32,6 +32,7 @@ export type SelfPlayer = {
 
 export function PlayClient({ code, alreadyJoined, playerId }: Props) {
   const [local, setLocal] = useState<Local>(alreadyJoined ? "joined" : "pre-join");
+  const [localPlayerId, setLocalPlayerId] = useState<string | null>(playerId);
   const [nickname, setNickname] = useState("");
   const [skin, setSkin] = useState<RocketSkin>("cyan");
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,10 @@ export function PlayClient({ code, alreadyJoined, playerId }: Props) {
         setError(body.error ?? "Error al unirte");
         return;
       }
+      const body = (await res.json().catch(() => ({}))) as {
+        playerId?: string;
+      };
+      if (body.playerId) setLocalPlayerId(body.playerId);
       setLocal("joined");
     } catch {
       setError("Error de red");
@@ -153,7 +158,7 @@ export function PlayClient({ code, alreadyJoined, playerId }: Props) {
     );
   }
 
-  return <JoinedView code={code} playerId={playerId} />;
+  return <JoinedView code={code} playerId={localPlayerId} />;
 }
 
 function JoinedView({ code, playerId }: { code: string; playerId: string | null }) {
