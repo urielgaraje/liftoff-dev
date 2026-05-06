@@ -153,13 +153,18 @@ title: Las cuatro capas
     </div>
   </div>
   <div class="capa-timeline">
-    <div class="ct-step"><span class="ct-name">Prompt</span><span class="ct-year">2022–23</span></div>
-    <div class="ct-line"></div>
-    <div class="ct-step"><span class="ct-name">Context</span><span class="ct-year">jun 2025</span></div>
-    <div class="ct-line"></div>
-    <div class="ct-step"><span class="ct-name">Harness</span><span class="ct-year">fin 2025</span></div>
-    <div class="ct-line"></div>
-    <div class="ct-step ct-step-current"><span class="ct-name">Agentic</span><span class="ct-year">ene 2026</span></div>
+    <div class="ct-track">
+      <span class="ct-dot"></span>
+      <span class="ct-dot"></span>
+      <span class="ct-dot"></span>
+      <span class="ct-dot ct-dot-current"></span>
+    </div>
+    <div class="ct-labels">
+      <div class="ct-step"><span class="ct-name">Prompt</span><span class="ct-year">2022–23</span></div>
+      <div class="ct-step"><span class="ct-name">Context</span><span class="ct-year">jun 2025</span></div>
+      <div class="ct-step"><span class="ct-name">Harness</span><span class="ct-year">fin 2025</span></div>
+      <div class="ct-step ct-step-current"><span class="ct-name">Agentic</span><span class="ct-year">hoy</span></div>
+    </div>
   </div>
 </div>
 
