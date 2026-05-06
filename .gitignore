@@ -16,3 +16,8 @@ test-results/
 *.pem
 *.tsbuildinfo
 next-env.d.ts
+
+# Screenshots de iteración de la charla (no versionados)
+/*.png
+.playwright-mcp/
+.vercel

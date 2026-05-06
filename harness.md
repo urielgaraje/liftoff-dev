@@ -237,6 +237,104 @@ El paquete npm lanzaba sin error pero no exponía herramientas. El warning sale 
 
 Para que Claude Code recargue `~/.claude.json`, hay que **terminar el proceso** del agente (cerrar el chat y abrir uno nuevo). Cerrar la pestaña del IDE no siempre basta; un comando o REPL persistente puede seguir vivo.
 
+### G7. Vercel CLI no persiste OAuth dentro del sandbox de Claude Code
+
+`vercel login` (OAuth device flow) escribe credenciales en `~/Library/Application Support/com.vercel.cli/auth.json`, pero **el sandbox de cada Bash de Claude Code aísla ese path**: el `auth.json` queda con 3 bytes (`{}`) entre invocaciones. Resultado: cada `vercel <cmd>` re-lanza OAuth → se llena de pestañas y se acumulan tokens "Vercel CLI from <hostname>" basura en el dashboard.
+
+**Síntoma**: el output de cada llamada empieza con `> No existing credentials found. Starting login flow...`, aunque la anterior haya completado el login.
+
+**Fix**: usar un **Personal Access Token** (no el OAuth device flow):
+
+1. Generar en https://vercel.com/account/settings/tokens (scope = el team que toca, expiry razonable).
+2. Guardarlo en `.env.local` como `VERCEL_TOKEN=vcp_…` (no committear, no es env var del producto, no se sube a Vercel).
+3. Pasarlo en cada llamada: `vercel <cmd> --token=$VERCEL_TOKEN` o `export VERCEL_TOKEN=...` y dejar que el CLI lo lea automáticamente.
+
+Limpieza: en https://vercel.com/account/settings/tokens borrar todos los tokens "Vercel CLI from <hostname>" creados durante los intentos OAuth fallidos — no se reusan.
+
+### G8. Subir env vars en bulk con `vercel env add`
+
+La sintaxis nueva (CLI ≥ 53) requiere `--value` y `--yes` para no-interactivo. El `vercel env add` falla si el par `(KEY, ENV)` ya existe — hay que `rm` primero o saltar.
+
+**Trampa de Preview**: para `preview`, el CLI exige el `<gitbranch>` como tercer argumento incluso en modo no interactivo. Si lo omites, devuelve `{"reason": "git_branch_required"}` y no tiene flag tipo `--all-preview-branches`. **Fix**: pasar `""` (string vacío) como tercer arg → aplica a todas las preview branches. Pasar `"*"` falla con `branch_not_found`.
+
+**Patrón en bash** (con `VERCEL_TOKEN` exportado), lee cada KEY del `.env.local` y la sube a los 3 environments:
+
+```bash
+KEYS="DATABASE_URL DATABASE_URL_UNPOOLED PUSHER_APP_ID PUSHER_SECRET \
+      NEXT_PUBLIC_PUSHER_KEY NEXT_PUBLIC_PUSHER_CLUSTER \
+      HOST_PASSPHRASE HOST_COOKIE_SECRET"
+
+for KEY in $KEYS; do
+  VAL=$(grep "^${KEY}=" .env.local | head -1 | sed "s/^${KEY}=//")
+  vercel env add "$KEY" production         --value "$VAL" --yes
+  vercel env add "$KEY" preview         "" --value "$VAL" --yes   # "" = all preview branches
+  vercel env add "$KEY" development        --value "$VAL" --yes
+done
+```
+
+`source .env.local` no sirve porque las URLs de Neon llevan `&` (channel_binding) y el shell las parsea. Por eso `grep | sed` por línea.
+
+Verificación: `vercel env ls` debe mostrar 24 entradas (8 vars × 3 envs). Luego ver §G9 para forzar redeploy.
+
+### G9. Redeploy programático tras subir env vars
+
+Subir env vars **no** dispara rebuild — el último deploy sigue construido sin esas vars. Tres opciones:
+
+1. **Push vacío**: `git commit --allow-empty -m "trigger redeploy" && git push`. La integración Git de Vercel construye desde scratch.
+2. **`vercel redeploy <url>`** (CLI): redeploy del último deployment **sin rebuild from scratch** (más rápido, mismo commit). Requiere pasar la URL exacta del deployment (la encuentras con `vercel ls <project>`).
+3. **Botón "Redeploy"** en el dashboard (Project → Deployments → último → ⋯).
+
+**Trampa de scope**: `vercel redeploy <url>` falla con `Error: Deployment belongs to a different team. Use vc switch...` aunque tu token sea válido. **Fix**: pasar `--scope <team-slug>` explícitamente:
+
+```bash
+vercel redeploy https://liftoff-app-XXXX-urielblanco-1278s-projects.vercel.app \
+  --scope urielblanco-1278s-projects
+```
+
+(El team slug aparece en el output de `vercel teams ls`.)
+
+**Verificación post-deploy**:
+
+```bash
+# Estado del deployment
+vercel inspect <url> --scope <team> | grep status   # esperado: "● Ready"
+
+# Health check rápido al alias de prod
+curl -s -o /dev/null -w "HTTP %{http_code}\n" -L https://<project>.vercel.app/
+```
+
+**Listado útil**:
+```bash
+vercel ls <project>   # historial reciente con status (Ready/Error) y URLs
+```
+
+---
+
+## Cleanup automático de jugadores que cierran pestaña
+
+**Contexto**: Pusher Channels (no presence) no detecta automáticamente cuando un cliente cae. Sin un disparador explícito, los players quedan como "fantasmas" en el lobby tras cerrar pestaña, F5 o crash de browser.
+
+**Solución implementada** (`stage-1-typing-v1+`):
+
+- Endpoint idempotente `POST /api/room/[code]/leave` que borra al player de la DB y broadcastea `PlayerLeft` por Pusher.
+- En el cliente, dentro de `JoinedView` (`src/app/play/play-client.tsx`):
+
+  ```tsx
+  useEffect(() => {
+    const onHide = () => {
+      navigator.sendBeacon(`/api/room/${code}/leave`);
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [code]);
+  ```
+
+**Por qué `pagehide` y no `beforeunload`**: `beforeunload` no es fiable en Safari/iOS y bloquea bfcache. `pagehide` se dispara siempre (cierre de pestaña, navegación a otra URL, refresh).
+
+**Por qué `sendBeacon` y no `fetch`**: `fetch` se cancela en mid-flight cuando la página se descarga; `sendBeacon` está diseñado exactamente para este caso (el browser se compromete a entregar el POST aun después del unload).
+
+**Trade-off aceptado**: un F5 también dispara `pagehide` → el player es removido y debe re-joinear. Si en el futuro queremos que el refresh sobreviva, hay que ir a heartbeat + TTL server-side (ver `progress.md` "decisiones pendientes"). Para la demo de la charla, F5-mata-player es aceptable.
+
 ---
 
 ## Cómo verificar deploys de Vercel sin el MCP de Vercel

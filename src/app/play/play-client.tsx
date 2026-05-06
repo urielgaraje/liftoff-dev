@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Rocket } from "@/components/game/rocket";
 import { RoomBadge } from "@/components/shared/room-badge";
 import { StageRenderer } from "@/components/game/stages";
@@ -141,6 +141,14 @@ export function PlayClient({ code, alreadyJoined }: Props) {
 
 function JoinedView({ code }: { code: string }) {
   const room = useRoomChannel(code);
+
+  useEffect(() => {
+    const onHide = () => {
+      navigator.sendBeacon(`/api/room/${code}/leave`);
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [code]);
 
   if (room.loading) {
     return (
