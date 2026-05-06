@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,10 +54,21 @@ export default function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-12 p-8">
       <div className="flex flex-col items-center gap-4 text-center">
-        <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
+        <motion.p
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+        >
           5 · 4 · 3 · 2 · 1
-        </p>
-        <h1 className="text-7xl font-bold tracking-tight text-fg-primary">Liftoff</h1>
+        </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-7xl font-bold tracking-tight text-fg-primary"
+        >
+          Liftoff
+        </motion.h1>
         <p className="text-fg-secondary">Carrera de cohetes multijugador en directo</p>
         <p className="font-mono text-xs tracking-wide text-fg-muted">
           50 jugadores · 3 etapas · ~4 min

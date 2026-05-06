@@ -49,7 +49,9 @@ export function HostBroadcast({ room }: Props) {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
-        <p
+        <motion.p
+          animate={{ opacity: [0.75, 1, 0.75] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
           className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
           data-testid="broadcast-header"
         >
@@ -58,7 +60,7 @@ export function HostBroadcast({ room }: Props) {
             : `STAGE ${stage ? stage.stageIndex + 1 : "?"} · ${
                 stage?.stageId.toUpperCase() ?? ""
               }`}
-        </p>
+        </motion.p>
         <div className="flex items-center gap-3">
           {stage && room.status === "racing" && (
             <div
@@ -84,9 +86,12 @@ export function HostBroadcast({ room }: Props) {
             aria-hidden
           />
           {showStageEndedBanner && (
-            <div
+            <motion.div
               data-testid="broadcast-banner"
-              className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 rounded-3xl bg-bg-secondary/95 px-12 py-10 shadow-2xl ring-2 ring-accent-cyan backdrop-blur"
+              initial={{ opacity: 0, scale: 0.85, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18 }}
+              className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 rounded-3xl bg-bg-secondary/95 px-12 py-10 shadow-[0_0_80px_rgba(34,211,238,0.45)] ring-2 ring-accent-cyan backdrop-blur"
             >
               <p className="font-mono text-xs tracking-[0.4em] text-accent-cyan">
                 STAGE COMPLETADA
@@ -98,7 +103,7 @@ export function HostBroadcast({ room }: Props) {
                 líder · {room.lastEnded?.leaderboard[0]?.nickname ?? "—"} ·{" "}
                 {room.lastEnded?.leaderboard[0]?.value ?? 0} m
               </p>
-            </div>
+            </motion.div>
           )}
           <div
             className="relative grid w-full max-w-3xl grid-cols-4 gap-6"

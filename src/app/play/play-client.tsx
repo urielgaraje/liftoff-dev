@@ -69,7 +69,13 @@ export function PlayClient({ code, alreadyJoined, playerId }: Props) {
     return (
       <main className="flex min-h-screen flex-col">
         <header className="flex items-center justify-between p-6">
-          <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">LIFTOFF</p>
+          <motion.p
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+          >
+            LIFTOFF
+          </motion.p>
           <RoomBadge code={code} />
         </header>
 
@@ -230,7 +236,13 @@ function LobbyView({
     <main className="flex min-h-screen flex-col" data-testid="lobby">
       <header className="flex items-center justify-between p-6">
         <div className="flex items-center gap-3">
-          <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">LIFTOFF</p>
+          <motion.p
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+          >
+            LIFTOFF
+          </motion.p>
           <RoomBadge code={code} withDot />
         </div>
         <div className="rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
@@ -255,11 +267,15 @@ function LobbyView({
             className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
             data-testid="player-list"
           >
-            {room.players.map((p) => (
-              <li
+            {room.players.map((p, i) => (
+              <motion.li
                 key={p.id}
                 data-testid={`player-${p.nickname}`}
-                className="flex items-center gap-3 rounded-xl bg-bg-secondary p-3 ring-1 ring-bg-tertiary"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut", delay: i * 0.04 }}
+                whileHover={{ y: -3, transition: { duration: 0.18 } }}
+                className="flex items-center gap-3 rounded-xl bg-bg-secondary p-3 ring-1 ring-bg-tertiary transition-shadow hover:shadow-[0_0_24px_rgba(34,211,238,0.18)]"
               >
                 <span
                   className={cn(
@@ -278,7 +294,7 @@ function LobbyView({
                 >
                   {p.nickname}
                 </span>
-              </li>
+              </motion.li>
             ))}
           </ul>
         </div>

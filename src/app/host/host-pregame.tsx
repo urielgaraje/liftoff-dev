@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Clipboard, Users } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { Rocket } from "@/components/game/rocket";
 import { Button } from "@/components/ui/button";
@@ -47,9 +48,13 @@ export function HostPreGame({ code, playUrl, room }: Props) {
   return (
     <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
-        <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
+        <motion.p
+          animate={{ opacity: [0.75, 1, 0.75] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+        >
           LIFTOFF · PRE-PARTIDA
-        </p>
+        </motion.p>
         <div className="flex items-center gap-2 rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
           <Users size={14} />
           <span data-testid="host-count">{room.players.length}/50</span>
