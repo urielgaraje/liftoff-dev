@@ -674,6 +674,11 @@
 .meme-4 { transform: rotate(8deg)  translate(5rem, -3rem);    z-index: 4; }
 .meme-5 { transform: rotate(-2deg) translate(-1rem, 0);       z-index: 5; }
 
+.meme-stack-welcome {
+  justify-content: flex-end;
+  padding-right: 8rem;
+}
+
 .meme-stack-end {
   position: relative;
   width: 100%;

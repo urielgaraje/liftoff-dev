@@ -28,7 +28,7 @@ title: Memes intro
   </h2>
 </div>
 
-<div class="meme-stack">
+<div class="meme-stack meme-stack-welcome">
   <img src="/memes/01-no-vine-a-jugal.png" class="meme meme-1" alt="no vine a jugal" v-click="1" />
   <img src="/memes/02-how-to-fly.jpg" class="meme meme-2" alt="how to fly" v-click="2" />
   <img src="/memes/03-verdad-1.jpg" class="meme meme-3" alt="verdad 1" v-click="3" />
