@@ -57,8 +57,10 @@ export function HostPreGame({ code, playUrl, room }: Props) {
   const hasPlayers = players.length > 0;
 
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between p-6">
+    <main className="relative flex min-h-screen flex-col overflow-hidden">
+      <PlanetBackdrop />
+
+      <header className="relative z-10 flex items-center justify-between p-6">
         <motion.p
           animate={{ opacity: [0.75, 1, 0.75] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
@@ -72,52 +74,32 @@ export function HostPreGame({ code, playUrl, room }: Props) {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col items-center gap-12 px-8 pb-12 pt-4">
-        <div className="flex flex-col items-center gap-3 pt-2">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="relative size-28 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(34,211,238,0.25) 0%, rgba(34,211,238,0.08) 50%, transparent 75%)",
-              boxShadow: "0 0 60px rgba(34,211,238,0.3)",
-            }}
-            aria-hidden
-          >
-            <motion.div
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-2 rounded-full bg-accent-cyan/40 blur-md"
-            />
-          </motion.div>
-          <motion.p
-            animate={{ opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="font-mono text-[10px] tracking-[0.4em] text-fg-muted"
-          >
-            DESTINO · PLANETA LIFTOFF
-          </motion.p>
-        </div>
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-10 px-8 pb-12 pt-4">
+        <motion.p
+          animate={{ opacity: [0.5, 0.9, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="font-mono text-[10px] tracking-[0.45em] text-fg-muted"
+        >
+          DESTINO · GDI
+        </motion.p>
 
         <div className="relative flex flex-col items-center gap-5">
           <motion.div
             aria-hidden
-            animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.85, 0.5] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-[-22px] rounded-3xl"
+            animate={{ scale: [1, 1.05, 1], opacity: [0.45, 0.8, 0.45] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-[-18px] rounded-3xl"
             style={{
               border: "1.5px solid var(--color-accent-cyan)",
-              boxShadow: "0 0 40px rgba(34,211,238,0.45)",
+              boxShadow: "0 0 40px rgba(34,211,238,0.4)",
               opacity: 0.55,
             }}
           />
           <motion.div
             aria-hidden
-            animate={{ scale: [1, 1.14, 1], opacity: [0.3, 0, 0.3] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-[-44px] rounded-3xl"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-[-36px] rounded-3xl"
             style={{ border: "1px solid var(--color-accent-cyan)" }}
           />
           <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
@@ -128,7 +110,7 @@ export function HostPreGame({ code, playUrl, room }: Props) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="font-mono text-[120px] font-medium tracking-[0.2em] text-fg-primary leading-none"
+            className="font-mono text-[88px] font-medium tracking-[0.2em] text-fg-primary leading-none"
             style={{
               textShadow:
                 "0 0 50px rgba(34,211,238,0.5), 0 0 12px rgba(34,211,238,0.6)",
@@ -237,5 +219,58 @@ export function HostPreGame({ code, playUrl, room }: Props) {
         </div>
       </div>
     </main>
+  );
+}
+
+function PlanetBackdrop() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ zIndex: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+        className="absolute"
+        style={{
+          left: "-45vw",
+          bottom: "-45vw",
+          width: "110vw",
+          height: "110vw",
+        }}
+      >
+        <div
+          className="size-full rounded-full"
+          style={{
+            background: `
+              radial-gradient(circle at 65% 30%, rgba(120,200,240,0.45) 0%, rgba(34,90,140,0.25) 30%, rgba(8,8,30,0.6) 65%, rgba(8,8,30,0.95) 100%)
+            `,
+            boxShadow: `
+              inset -60px -60px 200px rgba(0,0,0,0.7),
+              0 0 120px rgba(34,211,238,0.25),
+              0 0 240px rgba(34,211,238,0.18)
+            `,
+          }}
+        />
+        <motion.div
+          animate={{ opacity: [0.35, 0.55, 0.35] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 70%, rgba(34,211,238,0.18) 0%, transparent 50%)",
+            mixBlendMode: "screen",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            border: "1px solid rgba(34,211,238,0.18)",
+          }}
+        />
+      </motion.div>
+    </div>
   );
 }
