@@ -206,22 +206,21 @@ export function HostPreGame({ code, playUrl, room }: Props) {
 
 function PlanetBackdrop() {
   const ringGradient = `linear-gradient(to right,
-    transparent 0%,
-    transparent 4%,
-    rgba(190,215,170,0.6) 11%,
-    rgba(245,250,225,0.92) 18%,
-    rgba(160,195,150,0.6) 26%,
-    rgba(220,235,200,0.75) 32%,
-    rgba(110,150,110,0.45) 40%,
-    transparent 48%,
-    transparent 52%,
-    rgba(110,150,110,0.45) 60%,
-    rgba(220,235,200,0.75) 68%,
-    rgba(160,195,150,0.6) 74%,
-    rgba(245,250,225,0.92) 82%,
-    rgba(190,215,170,0.6) 89%,
-    transparent 96%,
-    transparent 100%
+    rgba(170,195,150,0.55) 0%,
+    rgba(210,230,190,0.78) 7%,
+    rgba(245,250,225,0.95) 14%,
+    rgba(190,215,170,0.65) 22%,
+    rgba(220,240,200,0.85) 30%,
+    rgba(140,180,130,0.55) 38%,
+    rgba(210,235,195,0.7) 44%,
+    transparent 50%,
+    rgba(210,235,195,0.7) 56%,
+    rgba(140,180,130,0.55) 62%,
+    rgba(220,240,200,0.85) 70%,
+    rgba(190,215,170,0.65) 78%,
+    rgba(245,250,225,0.95) 86%,
+    rgba(210,230,190,0.78) 93%,
+    rgba(170,195,150,0.55) 100%
   )`;
 
   return (
@@ -236,19 +235,18 @@ function PlanetBackdrop() {
         transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute left-1/2 -translate-x-1/2"
         style={{
-          top: "-72vw",
-          width: "85vw",
-          height: "85vw",
+          top: "-50vw",
+          width: "60vw",
+          height: "60vw",
         }}
       >
-        {/* Saturn ring TRAS — pasa por detrás del planeta, a la altura del
-            horizonte visible. Los extremos asoman a izquierda/derecha. */}
+        {/* Saturn ring TRAS — extiende muy a los lados del planeta. */}
         <div
           className="absolute left-1/2 -translate-x-1/2"
           style={{
-            top: "78%",
-            width: "215%",
-            height: "16%",
+            top: "80%",
+            width: "320%",
+            height: "22%",
             transform: "translateX(-50%) rotate(-8deg)",
             background: ringGradient,
             borderRadius: "50%",
@@ -363,25 +361,24 @@ function PlanetBackdrop() {
           }}
         />
 
-        {/* Saturn ring DELANTE — la parte del anillo que pasa por delante del
-            planeta visible (cruza el horizonte verde). Solo el segmento
-            central (donde cubre el planeta). */}
+        {/* Saturn ring DELANTE — la parte del anillo que pasa por delante
+            del planeta visible (cruza el horizonte). */}
         <div
           className="absolute left-1/2 -translate-x-1/2"
           style={{
-            top: "82%",
-            width: "215%",
-            height: "13%",
+            top: "85%",
+            width: "320%",
+            height: "18%",
             transform: "translateX(-50%) rotate(-8deg)",
             background: `linear-gradient(to right,
               transparent 0%,
-              transparent 32%,
-              rgba(220,235,200,0.0) 38%,
-              rgba(245,250,225,0.65) 44%,
+              transparent 40%,
+              rgba(220,235,200,0.0) 43%,
+              rgba(245,250,225,0.7) 47%,
               rgba(190,215,170,0.5) 50%,
-              rgba(245,250,225,0.65) 56%,
-              rgba(220,235,200,0.0) 62%,
-              transparent 68%,
+              rgba(245,250,225,0.7) 53%,
+              rgba(220,235,200,0.0) 57%,
+              transparent 60%,
               transparent 100%
             )`,
             borderRadius: "50%",
