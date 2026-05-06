@@ -6,9 +6,21 @@
 
 ## TL;DR
 
-Race multijugador de cohetes para una charla de agentic engineering (ver `mission.md` para el qué). Stack: Next.js 16 · Tailwind v4 · shadcn · Drizzle/Neon · Pusher · Playwright. Deploy: Vercel + Neon + Pusher.
+Race multijugador de cohetes para una charla de agentic engineering (ver `mission.md` para el qué). Stack: Next.js 16 · Tailwind v4 · shadcn · Drizzle/Neon · Pusher · Playwright · Framer Motion. Deploy: Vercel + Neon + Pusher.
 
-**Estado**: `stage-1-typing-v1` (último tag) + `7acda09` (cleanup de player fantasma con `pagehide` + `sendBeacon`, harness ampliado con gotchas Vercel CLI G7/G8/G9, deploy producción verde). Pipa completa probada (DB → API → Pusher → UI → E2E multi-browser). Primera etapa de juego (typing race) funciona end-to-end y se reproduce en prod. Falta: 2 etapas más + endgame + animaciones.
+**Estado**: `stage-1-typing-v1` (último tag) + slice **`look-and-feel-v1`** (24 commits desde `7acda09` hasta `18ae8b8`). Polish visual completo previo a la charla:
+- StarField global con paralaje + warp trails en host.
+- Cohete con SVG custom + llama desde la cola + trail de partículas + intensidad por ranking.
+- Player Lobby con cohete propio gigante y disco pulsante.
+- Host PreGame rediseñado con planeta verde gigante animado (nubes, tormenta, halo).
+- HostPodium con aterrizaje top 3 y pillars con medallas.
+- Player End con top 3 + medallas + fila destacada.
+- Typing scrollable de 3 líneas con karaoke-scroll.
+- Microanimaciones (banner, lobby cards, logos, landing).
+- Bug crítico fixeado: `selfPlayer` null tras join (cohete propio del lobby no renderizaba).
+- `.pen` sincronizado: HostPodium reescrito en Pencil, share button del Player End borrado.
+
+Pipa completa probada (DB → API → Pusher → UI → E2E multi-browser). Primera etapa de juego (typing race) funciona end-to-end y se reproduce en prod. Sigue faltando: 2 etapas más + endgame de juego (player progress real, no solo typing).
 
 **Prod**: https://liftoff-app-dev.vercel.app/ · **Repo**: https://github.com/urielgaraje/liftoff-dev
 
@@ -83,11 +95,26 @@ Ver `CLAUDE.md §"Decisiones pendientes"` y `progress.md §"Decisiones aún abie
 
 - F5 (refresh) en una pestaña de player la trata como cierre y elimina al jugador (consecuencia del fix de `pagehide` + `sendBeacon`). Hay que volver a hacer join. Si fuera necesario sobrevivir el refresh, ir a heartbeat + TTL server-side.
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
-- Diseño pixel-perfect del `.pen` no está al 100% en código (gradients, glows, etc.). Se aborda en `endgame-v1` o slice de polish.
+- **`HostBroadcast` (durante racing)** sigue con el layout original (grid `[1fr_360px]`). El `.pen` `OCThd` tiene un layout muy distinto pero no se sincronizó — pendiente para cuando se aborden stages 2/3.
+- **Frame `dIApO` (Host PreGame) del `.pen`** desincronizado con el código (ya rediseñado en React). Actualizable con Pencil MCP cuando haya tiempo.
 - `playwright.config.ts` usa `workers: 1` y `fullyParallel: false` porque los specs comparten el invariante "una sola sala activa".
+
+---
+
+## Sub-slices del look-and-feel-v1 (resumen rápido)
+
+A — StarField global (3 capas paralaje + tints + warp trails en host).
+B — Typing Stage scrollable de 3 líneas (karaoke-scroll).
+C — Motion trails de partículas en cohetes del HostBroadcast.
+D — HostPodium top 3 con aterrizaje + pillars.
+E — Player End con medallas y fila propia destacada.
+F — Microanimaciones (banner, lobby cards, logos, landing).
++ Cohete con SVG custom + llama, Player Lobby con cohete grande + disco pulsante, Host PreGame con planeta verde animado.
 
 ---
 
 ## Plan de la sesión anterior
 
-Si quieres ver el plan detallado del último slice ejecutado: `~/.claude/plans/lo-de-auth-iria-wondrous-crayon.md`. Contiene la decisión final de arquitectura acoplable de etapas y el roadmap de slices restantes.
+`~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md` — plan look-and-feel-v1 con los 6 sub-slices A-F y notas finales.
+
+Plan previo (arquitectura de stages): `~/.claude/plans/lo-de-auth-iria-wondrous-crayon.md`.

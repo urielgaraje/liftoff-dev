@@ -5,13 +5,38 @@
 
 ---
 
-## Estado: `stage-1-typing-v1`
+## Estado: `look-and-feel-v1` (post-`stage-1-typing-v1`)
 
-Tag `stage-1-typing-v1` en `main` (commit `948979f`). Arquitectura acoplable de etapas + primera etapa (typing race) end-to-end. 6 unit tests + 4 E2E (chromium + firefox) verdes en ~37s.
+Plan ejecutado: `~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md`. Stage 1 (typing race) sigue siendo el único stage implementado; toda la sesión fue **polish visual, animaciones, fix del bug de selfPlayer y sincronización con el `.pen`** para llegar a la charla con la app pulida.
 
-**Commit más reciente** (`7acda09`): fix del player fantasma al cerrar pestaña (`pagehide` + `navigator.sendBeacon` → `/api/room/[code]/leave` desde `JoinedView`); harness ampliado con G7/G8/G9 sobre Vercel CLI (sandbox no persiste OAuth → `VERCEL_TOKEN`, `vercel env add` bulk con `""` para Preview, redeploy con `--scope`); deploy de producción verde y verificado (`https://liftoff-app-dev.vercel.app/` → HTTP 200).
+**Commit más reciente** (`18ae8b8`): planeta del Host PreGame definitivo — sin anillos Saturn, sin highlight especular, ancho 100vw asomando desde arriba (~10-12vw inferiores), bandas atmosféricas + nubes en motion + tormenta puntual pulsante. Conjunto de ~24 commits desde `7acda09` cubriendo:
 
-**Commit anterior** (`c1116e7`): fix UX del banner "Planeta alcanzado" del host (z-index + duración + visibilidad), Player End con TOP 3 del leaderboard, y simplify pass (constante `STAGE_ENDED_BANNER_DURATION_MS`, `EndedView` con prop mínimo, guards no-op en `useRoomChannel`, dead code borrado).
+- **Sub-slice A — StarField**: canvas con 200 estrellas en 3 capas de paralaje, tintes ocasionales (cyan/magenta/yellow), 20% bright con halo radial. En `/host*` velocidad base 6× con ramp gradual hasta 9× en 45s + warp trails (líneas con gradient transparent→alpha) en estrellas medias y cercanas. `prefers-reduced-motion` respetado. (`src/components/shared/star-field.tsx`)
+- **Sub-slice B — Typing Stage scrollable**: ventana de 3 líneas con karaoke-scroll cuando el cursor entra en línea 2+. `lineHeight` fijo 64px, `useLayoutEffect` mide `cursorRef.offsetTop` y desliza el `<p>` con `motion.translateY` (0.45s easeOut). Mask top/bottom 12% para fade. Header con tabs "Despegue/Órbita/Aproximación" (despegue activo amarillo), "POSICIÓN #N de M" a la derecha. Footer con countdown grande con cambio de color (cyan>10s / magenta≤10s / red≤5s). Cursor magenta con parpadeo, shake suave en error, flash verde en palabra completada. (`src/components/game/stages/typing/typing-stage.tsx` + `typing-paragraph.tsx`)
+- **Sub-slice C — Motion trails**: cohetes del HostBroadcast pasados a `motion.div` con spring + trail de partículas (3-12 chispas amarillas/naranjas/rojas con tamaños/jitter/duración pseudo-random estables por seed) que caen detrás. Cantidad e intensidad escalan con el ranking — el líder lleva más cola y llama más grande. (`src/components/game/rocket-trail.tsx`)
+- **Sub-slice D — HostPodium**: top 3 con cohetes en posiciones 2/1/3 (1° centro más alto), pillars (oro/plata/bronce) que crecen desde 0 con stagger Framer, glow radial detrás del 1°. Render condicional — solo se dibujan los slots con player real (sin fantasmas cyan). (`src/components/game/host-podium.tsx`)
+- **Sub-slice E — Player End**: top 3 con medallas (mismo lenguaje visual que el Host Podium); fila destacada (ring cyan + shadow) si soy yo en top 3, o línea aparte "TÚ #N · X m" si no. (`EndedView` en `play-client.tsx`)
+- **Sub-slice F — Microanimaciones**: banner "Planeta alcanzado" del host con entrada spring + glow más fuerte; lobby cards con stagger entry + whileHover lift; pulso lento del logo `LIFTOFF` en todos los headers; entrada motion del título "Liftoff" en landing.
+
+**Cohete + animaciones**:
+- `Rocket` reescrito con SVG custom (sin la llama interna del icon de lucide). Llama externa de dos capas (outer naranja-amarilla + inner blanca-amarilla) anclada a la cola del cohete con `transformOrigin: top center`. Prop `intensity` (0..1) escala flame width/height. Pulso suave del cohete entero (y -1.5px + scale 1.03). (`src/components/game/rocket.tsx`)
+
+**Player Lobby** (`LobbyView` en `play-client.tsx`):
+- Cohete propio centrado size 120 con `animate=true`, encerrado en un disco con radial gradient del color del skin + anillo fino exterior pulsante (escala leve + opacity). Nickname text-4xl con text-shadow del skin. "PREPARANDO DESPEGUE" con dot cyan pulsante.
+- Bottom: fila horizontal de cohetes mini (size 28, animate, glow del skin) de los OTROS jugadores. Hasta 8 visibles + chip "+N más".
+
+**Host PreGame** (`HostPreGame` reescrito):
+- Layout vertical centrado (no más 2 columnas).
+- Planeta gigante de fondo (verde, asoma desde arriba como una "U") en componente `<PlanetBackdrop/>` con animaciones internas — 5 capas: base esfera con radial gradient sólido, bandas atmosféricas finas (overlay), bandas anchas (multiply), nubes/manchas en motion.div trasladándose 90s linear (simula rotación), tormenta puntual pulsante 8s, polos oscuros, terminator y halo atmosférico exterior pulsante.
+- Código de sala XL (88px) con text-shadow cyan, URL pill compacta con botón COPIAR en línea, fila de cohetes en pista, botón "Iniciar carrera" pill grande con glow.
+
+**Sync con `.pen` (Pencil MCP)**:
+- Frame `KFLxV` (Host Podium) actualizado para reflejar la implementación React: layout 2/1/3 con cohetes + pillars + medallas (era una vista personal con un solo cohete grande).
+- Frame `Gib1D` (Player End): borrado el botón "Compartir resultado" (`S1cgf`) — no implementado en código, alto riesgo en demo.
+
+**Bug fix crítico** (`a3fcf29`): `selfPlayer` quedaba `null` tras un join nuevo porque `playerId` se calculaba server-side ANTES del POST `/join`. Fix: capturar `playerId` de la respuesta del join y guardarlo en `localPlayerId` state. JoinedView ahora usa el local. Sin esto el cohete grande del lobby no renderizaba.
+
+**Commit anterior al slice** (`7acda09`): fix del player fantasma al cerrar pestaña + harness ampliado con G7/G8/G9 sobre Vercel CLI + deploy producción verde.
 
 ### URLs
 
@@ -113,6 +138,19 @@ Migración: `drizzle/0001_talented_randall_flagg.sql`.
 
 ---
 
+## Decisiones cerradas en `look-and-feel-v1`
+
+- **`selfPlayer` resuelto en cliente** vía `localPlayerId` capturado de la respuesta del POST `/join`. `playerId` server-side (de `page.tsx`) ya no es la única fuente de verdad — el cliente actualiza su state tras un join nuevo. Sin esto el cohete propio del lobby no renderizaba en pestañas frescas.
+- **StarField velocidad**: `usePathname` detecta `/host*` y aplica base 6× con ramp lineal hasta 9× en 45s. Reset al cambiar de ruta. Player y landing siguen a 1× para lectura cómoda.
+- **Warp trails**: solo se dibujan cuando `speed > 2` y solo en estrellas de capas 1 y 2 (medias y cercanas). Línea con gradient transparent→alpha hacia el bottom, longitud proporcional a `vy * speed * 22`.
+- **Typing scrollable**: `lineHeight` fijo en 64px (no responsive). El cálculo de `currentLine` hace `Math.round(offsetTop / 64)`. Texto en sans-serif text-4xl/40px (no monospace) para legibilidad cinematográfica. Mask gradient top/bottom 12% para fade in/out de las líneas.
+- **Trail de partículas**: viven dentro del `motion.div` del cohete (siguen al cohete cuando sube), no son un trail físicamente realista en el suelo. Cantidad = `3 + ratio*9` chispas. Seed estable por `playerId.charCodeAt() + index` para que las posiciones no cambien en re-renders.
+- **HostPodium render condicional**: con menos de 3 jugadores no se dibujan los slots vacíos (antes había placeholders cyan fantasmagóricos). Solo aparecen las columnas con player real.
+- **Planeta del Host PreGame**: 100vw × 100vw, top -88vw, asomando desde arriba (forma de U). Color verde-mar (no azul). Sin anillos Saturno (probados en varios commits intermedios pero no convencieron). Tres animaciones internas: capa de nubes/manchas trasladándose 90s, tormenta puntual pulsante 8s, halo atmosférico exterior pulsante 6s.
+- **Cohete `Rocket`** rotado SIEMPRE (icon de lucide es diagonal, lo apuntamos vertical). Llama vertical anclada a la cola con `transformOrigin: top center`. Sin llama interna del icon original (eliminada al rehacerlo como SVG custom).
+
+---
+
 ## Cómo continuar
 
 ### Próximo slice: `stage-2-anagram-v1`
@@ -161,5 +199,6 @@ curl -s -o /dev/null -w "%{http_code}\n" https://liftoff-app-dev.vercel.app/api/
 
 - Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico).
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
-- Diseño pixel-perfect: el `.pen` tiene afinaciones que aún no están en código (gradients, glow del top de podio, etc.). No bloquea, lo abordamos en `endgame-v1` o un slice de polish.
-- Animaciones: ni canvas stars ni motion trails Framer todavía. Para `endgame-v1`.
+- **`HostBroadcast` durante racing** sigue con su layout original (grid `[1fr_360px]` con 8 cohetes en grid + leaderboard lateral). El `.pen` `OCThd` tiene un layout muy distinto (planeta arriba, cohetes flotando libres, leaderboard derecho más detallado). Sin sincronizar — decisión: mantenemos el actual hasta `stage-2` o `stage-3` (la "pantalla estrella" según mission). Si se quiere acercar al `.pen`, requiere refactor del layout.
+- **Frame `dIApO` (Host PreGame) del `.pen`** sigue con el layout viejo de 2 columnas (AB12 + lista jugadores + botón). El código React usa el layout vertical centrado con planeta gigante. Desincronizados — actualizar el `.pen` cuando haya tiempo (operación Pencil MCP rápida, similar a la del `KFLxV`).
+- **`docs/talk/` y `slides/`** evolucionan en paralelo (commits del usuario en la misma sesión: `c17d87b`, `99e57f1`, `5a51ec6`, `075d772`, `999a117`). Son del proyecto Slidev de la charla, no del producto Liftoff.
