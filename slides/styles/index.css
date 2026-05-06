@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 
+/* Slidev: ocultar overlays de dev que se quedan visibles */
+#slidev-goto-dialog,
+.slidev-overview,
+.slidev-nav {
+  display: none !important;
+}
+
 :root {
   --garaje-black: #000000;
   --garaje-white: #ffffff;

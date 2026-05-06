@@ -10,6 +10,7 @@ lineNumbers: false
 drawings:
   persist: false
 mdc: true
+contextMenu: false
 fonts:
   sans: 'Inter'
   mono: 'IBM Plex Mono'
