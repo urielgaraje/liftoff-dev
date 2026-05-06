@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { HostPodium } from "@/components/game/host-podium";
 import { Rocket } from "@/components/game/rocket";
+import { RocketTrail } from "@/components/game/rocket-trail";
 import { type RocketSkin } from "@/lib/game/skins";
 import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
 import { cn } from "@/lib/utils";
@@ -109,28 +110,19 @@ export function HostBroadcast({ room }: Props) {
             className="relative grid w-full max-w-3xl grid-cols-4 gap-6"
             data-testid="broadcast-rockets"
           >
-            {top8.map((p) => {
+            {top8.map((p, idx) => {
               const ratio = topValue > 0 ? p.value / topValue : 0;
               const lift = Math.round(ratio * 200);
               const skin = p.rocketSkin as RocketSkin;
+              const seed = p.id
+                .split("")
+                .reduce((acc, c) => acc + c.charCodeAt(0), idx);
               return (
                 <div
                   key={p.id}
                   data-testid={`broadcast-rocket-${p.nickname}`}
                   className="relative flex flex-col items-center"
                 >
-                  {lift > 6 && (
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute left-1/2 bottom-12 z-0 w-[6px] -translate-x-1/2 rounded-full"
-                      style={{
-                        height: `${lift}px`,
-                        background: `linear-gradient(to top, var(--color-rocket-${skin}) 0%, transparent 100%)`,
-                        opacity: 0.7,
-                        filter: `blur(0.5px) drop-shadow(0 0 8px var(--color-rocket-${skin}))`,
-                      }}
-                    />
-                  )}
                   <motion.div
                     initial={false}
                     animate={{ y: -lift }}
@@ -143,7 +135,13 @@ export function HostBroadcast({ room }: Props) {
                         filter: `drop-shadow(0 0 12px var(--color-rocket-${skin}))`,
                       }}
                     >
-                      <Rocket skin={skin} size={56} animate />
+                      <Rocket skin={skin} size={56} animate intensity={0.6 + ratio * 0.6} />
+                      <RocketTrail
+                        intensity={ratio}
+                        skin={skin}
+                        seed={seed}
+                        topOffset={50}
+                      />
                     </span>
                     <span className="rounded-full bg-bg-secondary/85 px-2 py-0.5 font-mono text-xs text-fg-primary backdrop-blur">
                       {p.nickname}
