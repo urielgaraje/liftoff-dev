@@ -251,12 +251,41 @@ function LobbyView({
       </header>
 
       <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-        <div className="flex flex-col items-center gap-2">
-          <p className="font-mono text-xs tracking-wider text-fg-muted">DESTINO</p>
-          <h1 className="text-3xl font-medium text-fg-primary">Planeta Liftoff</h1>
-          <p className="font-mono text-xs tracking-wider text-accent-cyan">
-            PREPARANDO DESPEGUE
-          </p>
+        <div className="flex flex-col items-center gap-3">
+          <motion.p
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="font-mono text-[10px] tracking-[0.4em] text-fg-muted"
+          >
+            DESTINO
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-4xl font-medium tracking-tight text-fg-primary"
+            style={{
+              textShadow: "0 0 30px rgba(34,211,238,0.25)",
+            }}
+          >
+            Planeta Liftoff
+          </motion.h1>
+          <div className="flex items-center gap-2">
+            <motion.span
+              aria-hidden
+              animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              className="size-1.5 rounded-full bg-accent-cyan"
+              style={{ boxShadow: "0 0 10px var(--color-accent-cyan)" }}
+            />
+            <motion.p
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="font-mono text-xs tracking-[0.35em] text-accent-cyan"
+            >
+              PREPARANDO DESPEGUE
+            </motion.p>
+          </div>
         </div>
 
         <div className="w-full max-w-4xl">
@@ -279,12 +308,12 @@ function LobbyView({
               >
                 <span
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-lg",
+                    "flex size-9 items-center justify-center rounded-lg",
                     SKIN_BG_CLASS[p.rocketSkin as RocketSkin],
                     "bg-opacity-20",
                   )}
                 >
-                  <Rocket skin={p.rocketSkin as RocketSkin} size={20} />
+                  <Rocket skin={p.rocketSkin as RocketSkin} size={22} animate />
                 </span>
                 <span
                   className={cn(
