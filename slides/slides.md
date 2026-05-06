@@ -446,8 +446,8 @@ title: Volvamos al agente
   </div>
   <div class="slide-split-right">
     <div class="meme-stack meme-stack-end">
-      <img src="/memes/layers.jpeg" class="meme meme-end-1" alt="layers" />
-      <img src="/memes/end.jpg" class="meme meme-end-2" alt="end" v-click="1" />
+      <img src="/memes/layers.jpeg" class="meme meme-end-1" alt="layers" v-click="1" />
+      <img src="/memes/end.jpg" class="meme meme-end-2" alt="end" v-click="2" />
     </div>
   </div>
 </div>
