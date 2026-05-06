@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 type Layer = 0 | 1 | 2;
@@ -73,11 +73,28 @@ function spawnStars(w: number, h: number): Star[] {
   return stars;
 }
 
+const HOST_SPEED_BASE = 6;
+const HOST_SPEED_MAX = 9;
+const HOST_RAMP_MS = 45_000;
+
 export function StarField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pathname = usePathname();
+  const [boost, setBoost] = useState(0);
   const speedRef = useRef(1);
-  speedRef.current = pathname?.startsWith("/host") ? 4 : 1;
+  speedRef.current = pathname?.startsWith("/host") ? HOST_SPEED_BASE + boost : 1;
+
+  useEffect(() => {
+    setBoost(0);
+    if (!pathname?.startsWith("/host")) return;
+    const start = Date.now();
+    const id = window.setInterval(() => {
+      const elapsed = Date.now() - start;
+      const ratio = Math.min(1, elapsed / HOST_RAMP_MS);
+      setBoost(ratio * (HOST_SPEED_MAX - HOST_SPEED_BASE));
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [pathname]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
