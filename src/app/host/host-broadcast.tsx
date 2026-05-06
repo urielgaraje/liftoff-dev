@@ -7,6 +7,7 @@ import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
 import { cn } from "@/lib/utils";
 
 const TOP_VISIBLE = 8;
+const STAGE_ENDED_BANNER_DURATION_MS = 3500;
 
 type Props = {
   code: string;
@@ -27,10 +28,6 @@ export function HostBroadcast({ room }: Props) {
     : 0;
   const remainingS = Math.ceil(remainingMs / 1000);
 
-  const playersById = useMemo(() => {
-    return Object.fromEntries(room.players.map((p) => [p.id, p]));
-  }, [room.players]);
-
   const ranked = useMemo(() => {
     const items = room.players.map((p) => ({
       ...p,
@@ -44,7 +41,8 @@ export function HostBroadcast({ room }: Props) {
   const top8 = ranked.slice(0, TOP_VISIBLE);
 
   const showStageEndedBanner =
-    room.lastEnded !== null && now - room.lastEnded.endedAt < 1500;
+    room.lastEnded !== null &&
+    now - room.lastEnded.endedAt < STAGE_ENDED_BANNER_DURATION_MS;
 
   return (
     <main className="flex min-h-screen flex-col bg-bg-primary">
@@ -81,11 +79,20 @@ export function HostBroadcast({ room }: Props) {
             aria-hidden
           />
           {showStageEndedBanner && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-bg-secondary px-8 py-6 ring-1 ring-accent-cyan">
-              <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
+            <div
+              data-testid="broadcast-banner"
+              className="absolute top-1/2 left-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 rounded-3xl bg-bg-secondary/95 px-12 py-10 shadow-2xl ring-2 ring-accent-cyan backdrop-blur"
+            >
+              <p className="font-mono text-xs tracking-[0.4em] text-accent-cyan">
                 STAGE COMPLETADA
               </p>
-              <p className="mt-2 text-2xl text-fg-primary">Planeta alcanzado</p>
+              <p className="text-4xl font-medium text-fg-primary">
+                Planeta alcanzado
+              </p>
+              <p className="font-mono text-xs tracking-wider text-fg-muted">
+                líder · {room.lastEnded?.leaderboard[0]?.nickname ?? "—"} ·{" "}
+                {room.lastEnded?.leaderboard[0]?.value ?? 0} m
+              </p>
             </div>
           )}
           <div
@@ -151,7 +158,6 @@ export function HostBroadcast({ room }: Props) {
               </li>
             )}
           </ul>
-          {playersById && null}
         </aside>
       </div>
 

@@ -113,14 +113,20 @@ export function useRoomChannel(code: string | null): RoomState {
     });
 
     channel.bind(EVENT.PlayerLeft, (payload: PlayerLeftPayload) => {
-      setState((prev) => ({
-        ...prev,
-        players: prev.players.filter((p) => p.id !== payload.id),
-      }));
+      setState((prev) => {
+        if (!prev.players.some((p) => p.id === payload.id)) return prev;
+        return {
+          ...prev,
+          players: prev.players.filter((p) => p.id !== payload.id),
+        };
+      });
     });
 
     channel.bind(EVENT.RoomUpdated, (payload: RoomUpdatedPayload) => {
-      setState((prev) => ({ ...prev, status: payload.status }));
+      setState((prev) => {
+        if (prev.status === payload.status) return prev;
+        return { ...prev, status: payload.status };
+      });
     });
 
     channel.bind(EVENT.StageStarted, (payload: StageStartedPayload) => {
@@ -151,16 +157,19 @@ export function useRoomChannel(code: string | null): RoomState {
     });
 
     channel.bind(EVENT.StageEnded, (payload: StageEndedPayload) => {
-      setState((prev) => ({
-        ...prev,
-        lastEnded: {
-          stageIndex: payload.stageIndex,
-          leaderboard: payload.leaderboard,
-          endedAt: Date.now(),
-        },
-        status: payload.nextStageIndex === null ? "ended" : prev.status,
-        stage: payload.nextStageIndex === null ? null : prev.stage,
-      }));
+      setState((prev) => {
+        if (prev.lastEnded?.stageIndex === payload.stageIndex) return prev;
+        return {
+          ...prev,
+          lastEnded: {
+            stageIndex: payload.stageIndex,
+            leaderboard: payload.leaderboard,
+            endedAt: Date.now(),
+          },
+          status: payload.nextStageIndex === null ? "ended" : prev.status,
+          stage: payload.nextStageIndex === null ? null : prev.stage,
+        };
+      });
     });
 
     return () => {

@@ -164,7 +164,7 @@ function JoinedView({ code }: { code: string }) {
   }
 
   if (room.status === "ended") {
-    return <EndedView code={code} />;
+    return <EndedView code={code} lastEnded={room.lastEnded} />;
   }
 
   return <LobbyView code={code} room={room} />;
@@ -242,16 +242,46 @@ function LobbyView({
   );
 }
 
-function EndedView({ code }: { code: string }) {
+function EndedView({
+  code,
+  lastEnded,
+}: {
+  code: string;
+  lastEnded: ReturnType<typeof useRoomChannel>["lastEnded"];
+}) {
+  const top3 = lastEnded?.leaderboard.slice(0, 3) ?? [];
+
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-8 text-center"
+      className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-primary p-8 text-center"
       data-testid="play-ended"
     >
-      <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">LIFTOFF</p>
-      <h1 className="text-3xl font-medium text-fg-primary">Carrera completada</h1>
+      <p className="font-mono text-xs tracking-[0.4em] text-accent-cyan">
+        PLANETA ALCANZADO
+      </p>
+      <h1 className="text-4xl font-medium text-fg-primary">Carrera completada</h1>
+
+      {top3.length > 0 && (
+        <div className="flex flex-col items-center gap-2 rounded-2xl bg-bg-secondary p-6 ring-1 ring-bg-tertiary">
+          <p className="font-mono text-xs tracking-wider text-fg-muted">TOP 3</p>
+          <ul className="flex flex-col gap-1 text-left">
+            {top3.map((p, i) => (
+              <li
+                key={p.playerId}
+                className="flex items-center gap-3 font-mono text-sm"
+              >
+                <span className="w-6 text-fg-muted">#{i + 1}</span>
+                <Rocket skin={p.rocketSkin} size={16} />
+                <span className="text-fg-primary">{p.nickname}</span>
+                <span className="text-fg-secondary">— {p.value} m</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <p className="font-mono text-xs text-fg-muted">
-        Sala {code} · podio en slice posterior
+        Sala {code} · podio completo en slice posterior
       </p>
     </main>
   );
