@@ -299,6 +299,74 @@
   50% { opacity: 0.35; }
 }
 
+/* ── slide 6 — capa timeline ─────────────────── */
+
+.slide-six {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1.4rem;
+}
+
+.slide-six .slide-split {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+
+.capa-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0 0.2rem;
+  border-top: 1px solid currentColor;
+}
+
+.ct-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 7rem;
+  position: relative;
+  padding-top: 0.6rem;
+}
+
+.ct-step::before {
+  content: '';
+  position: absolute;
+  top: -0.45rem;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ct-step-current::before { background: var(--garaje-pink); }
+.ct-step-current .ct-name { color: var(--garaje-pink); }
+
+.ct-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.ct-year {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--garaje-gray-600);
+  letter-spacing: 0.02em;
+  margin-top: 0.1rem;
+}
+
+.ct-line {
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.25;
+  margin-top: -0.6rem;
+}
+
 /* ── slide 5 — matrioska ─────────────────────── */
 
 .slide-split {

@@ -122,33 +122,44 @@ page: 6
 title: Las cuatro capas
 ---
 
-<div class="slide-split">
-  <div class="slide-split-left">
-    <p class="eyebrow">Mapa mental</p>
-    <h2 class="lead">
-      Cuatro capas,<br/>
-      una <span class="accent-pink">dentro</span> de otra.
-    </h2>
-    <p class="caveat">
-      La de fuera contiene a la de dentro.<br/>
-      Cuando algo falle, sube por la pila.
-    </p>
-  </div>
-  <div class="slide-split-right">
-    <div class="matrioska">
-      <div class="ring ring-4">
-        <span class="label">Agentic</span>
-        <div class="ring ring-3">
-          <span class="label">Harness</span>
-          <div class="ring ring-2">
-            <span class="label">Context</span>
-            <div class="ring ring-1">
-              <span class="label">Prompt</span>
+<div class="slide-six">
+  <div class="slide-split">
+    <div class="slide-split-left">
+      <p class="eyebrow">Mapa mental</p>
+      <h2 class="lead">
+        Cuatro capas,<br/>
+        una <span class="accent-pink">dentro</span> de otra.
+      </h2>
+      <p class="caveat">
+        La de fuera contiene a la de dentro.<br/>
+        Cuando algo falle, sube por la pila.
+      </p>
+    </div>
+    <div class="slide-split-right">
+      <div class="matrioska">
+        <div class="ring ring-4">
+          <span class="label">Agentic</span>
+          <div class="ring ring-3">
+            <span class="label">Harness</span>
+            <div class="ring ring-2">
+              <span class="label">Context</span>
+              <div class="ring ring-1">
+                <span class="label">Prompt</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+  <div class="capa-timeline">
+    <div class="ct-step"><span class="ct-name">Prompt</span><span class="ct-year">2022–23</span></div>
+    <div class="ct-line"></div>
+    <div class="ct-step"><span class="ct-name">Context</span><span class="ct-year">jun 2025</span></div>
+    <div class="ct-line"></div>
+    <div class="ct-step"><span class="ct-name">Harness</span><span class="ct-year">fin 2025</span></div>
+    <div class="ct-line"></div>
+    <div class="ct-step ct-step-current"><span class="ct-name">Agentic</span><span class="ct-year">ene 2026</span></div>
   </div>
 </div>
 
