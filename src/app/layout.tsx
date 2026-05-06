@@ -27,7 +27,23 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <div
+          data-mobile-gate
+          className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-8 text-center lg:hidden"
+        >
+          <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
+            5 · 4 · 3 · 2 · 1
+          </p>
+          <h1 className="text-3xl font-bold text-fg-primary">
+            Abre esto en un portátil
+          </h1>
+          <p className="max-w-xs text-sm text-fg-secondary">
+            Liftoff necesita teclado físico y pantalla de al menos 1024px.
+          </p>
+        </div>
+        <div className="hidden lg:contents">{children}</div>
+      </body>
     </html>
   );
 }

@@ -28,7 +28,7 @@ liftoff/
 
 ## Estado
 
-`starter-rich-v1`. Scaffold completo y deployado, cero feature aún. Ver `progress.md` para detalle.
+`vertical-slice-v1`. Pipa completa probada de extremo a extremo (DB Neon → API → Pusher realtime → UI → E2E multi-browser). Landing real + Host Pre-game + Player Join + Player Lobby con sync en vivo. Sin etapas de juego aún. Ver `progress.md` para detalle.
 
 App: https://liftoff-app-dev.vercel.app/
 

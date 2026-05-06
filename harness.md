@@ -66,9 +66,11 @@ NEXT_PUBLIC_PUSHER_KEY=
 PUSHER_SECRET=
 NEXT_PUBLIC_PUSHER_CLUSTER=
 HOST_PASSPHRASE=
+HOST_COOKIE_SECRET=
 ```
 
 `HOST_PASSPHRASE` se genera con `openssl rand -hex 16`.
+`HOST_COOKIE_SECRET` (firma HMAC de la cookie de host) se genera con `openssl rand -hex 32`.
 
 `.gitignore` mínimo:
 

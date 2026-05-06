@@ -17,3 +17,15 @@ export const pusherServer = new Pusher({
   cluster,
   useTLS: true,
 });
+
+export function roomChannel(code: string): string {
+  return `room-${code}`;
+}
+
+export async function broadcast(
+  code: string,
+  event: string,
+  payload: unknown,
+): Promise<void> {
+  await pusherServer.trigger(roomChannel(code), event, payload);
+}

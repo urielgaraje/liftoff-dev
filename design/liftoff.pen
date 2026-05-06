@@ -22,7 +22,8 @@
       "fill": "#666666",
       "content": "Race multijugador de cohetes hacia un planeta · 50 jugadores · 3 etapas · Estilo: dark space neon",
       "fontFamily": "Inter",
-      "fontSize": 15
+      "fontSize": 15,
+      "fontWeight": "normal"
     },
     {
       "type": "frame",
@@ -128,7 +129,8 @@
               "fill": "#9CA3D9",
               "content": "Carrera de cohetes multijugador en directo",
               "fontFamily": "Inter",
-              "fontSize": 18
+              "fontSize": 18,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -152,7 +154,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -169,7 +172,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -222,12 +226,94 @@
               ]
             },
             {
-              "type": "text",
-              "id": "BNRIv",
-              "fill": "#5C6087",
-              "content": "¿Eres jugador? Escanea el QR que comparta tu host",
-              "fontFamily": "Inter",
-              "fontSize": 13
+              "type": "frame",
+              "id": "jVLyS",
+              "name": "joinForm",
+              "layout": "vertical",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SHwp0",
+                  "name": "joinLabel",
+                  "fill": "#5C6087",
+                  "content": "TENGO UN CÓDIGO",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1.6
+                },
+                {
+                  "type": "frame",
+                  "id": "A03NFg",
+                  "name": "codeInput",
+                  "fill": "#13132E",
+                  "cornerRadius": 12,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "#1F1F45"
+                  },
+                  "padding": [
+                    14,
+                    28
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bIgCD",
+                      "name": "codeText",
+                      "fill": "#FFFFFF",
+                      "content": "AB12",
+                      "fontFamily": "Geist Mono",
+                      "fontSize": 32,
+                      "fontWeight": "600",
+                      "letterSpacing": 8
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DXgdR",
+                  "name": "joinBtn",
+                  "fill": "#1F1F45",
+                  "cornerRadius": 9999,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "#22D3EE"
+                  },
+                  "gap": 10,
+                  "padding": [
+                    14,
+                    36
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "S3Ozlt",
+                      "name": "joinBtnText",
+                      "fill": "#22D3EE",
+                      "content": "Únete",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "dMehU",
+                      "name": "joinBtnIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "arrow-right",
+                      "iconFontFamily": "lucide",
+                      "fill": "#22D3EE"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -239,7 +325,8 @@
           "fill": "#5C6087",
           "content": "Mejor experiencia en navegador desktop",
           "fontFamily": "Inter",
-          "fontSize": 11
+          "fontSize": 11,
+          "fontWeight": "normal"
         },
         {
           "type": "ellipse",
@@ -484,7 +571,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -577,7 +665,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -1140,7 +1229,8 @@
               "fill": "#9CA3D9",
               "content": "47/50 jugadores activos",
               "fontFamily": "Inter",
-              "fontSize": 13
+              "fontSize": 13,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -1814,7 +1904,8 @@
               "content": "· · ·",
               "textAlign": "center",
               "fontFamily": "Inter",
-              "fontSize": 18
+              "fontSize": 18,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -2026,7 +2117,8 @@
               "fill": "#9CA3D9",
               "content": "12 jugadores conectados · esperando al host",
               "fontFamily": "Inter",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -3051,7 +3143,8 @@
               "lineHeight": 1.55,
               "textAlign": "center",
               "fontFamily": "Geist Mono",
-              "fontSize": 38
+              "fontSize": 38,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -3665,7 +3758,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3729,35 +3823,14 @@
               "alignItems": "center",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "xKxD3",
-                  "name": "qrCard",
-                  "width": 420,
-                  "height": 420,
-                  "fill": "#FFFFFF",
-                  "cornerRadius": 28,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon_font",
-                      "id": "y0zjDh",
-                      "width": 340,
-                      "height": 340,
-                      "iconFontName": "qr-code",
-                      "iconFontFamily": "lucide",
-                      "fill": "#08081E"
-                    }
-                  ]
-                },
-                {
                   "type": "text",
                   "id": "te3jn",
                   "fill": "#FFFFFF",
-                  "content": "Escanea para unirte",
-                  "fontFamily": "Inter",
-                  "fontSize": 26,
-                  "fontWeight": "700"
+                  "content": "AB12",
+                  "fontFamily": "Geist Mono",
+                  "fontSize": 120,
+                  "fontWeight": "600",
+                  "letterSpacing": 18
                 },
                 {
                   "type": "frame",
@@ -3789,6 +3862,45 @@
                       "fontFamily": "Geist Mono",
                       "fontSize": 20,
                       "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "O4Wkvt",
+                  "name": "copyBtn",
+                  "fill": "#1F1F45",
+                  "cornerRadius": 9999,
+                  "stroke": {
+                    "thickness": 1,
+                    "fill": "#9CA3D9"
+                  },
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "ICCwL",
+                      "name": "copyBtnIcon",
+                      "width": 16,
+                      "height": 16,
+                      "iconFontName": "clipboard",
+                      "iconFontFamily": "lucide",
+                      "fill": "#9CA3D9"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XDhzi",
+                      "name": "copyBtnText",
+                      "fill": "#9CA3D9",
+                      "content": "Copiar URL",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
                     }
                   ]
                 }
@@ -4118,7 +4230,8 @@
                   "fill": "#5C6087",
                   "content": "·",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",

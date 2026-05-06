@@ -151,9 +151,14 @@ docs/
 
 ## Decisiones pendientes
 
-Estas son cosas que aún no están decididas y que requieren elección antes o durante el primer build:
+Cerradas en `vertical-slice-v1`:
 
-- **Layout strategy** del player game: ¿una sola page con state machine, o tres pages separadas (`/play/typing`, `/play/anagram`, `/play/memoria`)? Tentativamente: state machine en una sola page para evitar reconnects.
+- ✅ **Layout strategy** del player game → state machine en `/play` (evita reconnects de Pusher).
+- ✅ **Schema de Pusher channels** → canal único `room-<code>` con eventos `player-joined`, `player-left`, `room-updated`.
+- ✅ **Auth host** → passphrase env var plano + cookie httpOnly firmada con HMAC (`HOST_COOKIE_SECRET`). Promotable a bcrypt+sesiones cuando haga falta.
+- ✅ **QR del Host Pre-game** → eliminado (renegociación de mission §Vistas: el juego es desktop-only por el typing). Sustituido por code XXL + URL pill + botón "Copiar URL".
+
+Aún abiertas:
+
 - **Word lists** del typing race: idioma, longitud, dificultad. Probablemente `en` y `es` con 3 niveles (corto / medio / largo).
-- **Schema de Pusher channels**: `room-<id>`, `player-<id>`, `host-<id>` o un único `room-<id>` con subscriptions filtradas.
 - **Anti-cheat exact thresholds**: cuántos chars/s bloquean en el typing race; cuántos clicks/s en Simon.
