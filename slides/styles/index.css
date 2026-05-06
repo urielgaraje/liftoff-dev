@@ -6,12 +6,12 @@
   --garaje-pink: #f67bbd;
   --garaje-pink-soft: #ffe7fb;
   --garaje-paper: #f9f5f9;
-  --garaje-gray-200: #d9d9d9;
+  --garaje-gray-200: #b0b0b0;
   --garaje-gray-500: #989898;
   --garaje-gray-600: #7e7e7e;
 
   --slidev-theme-primary: var(--garaje-pink);
-  --garaje-fg-muted-light: #7e7e7e;
+  --garaje-fg-muted-light: #4a4a4a;
 }
 
 /* ── base ────────────────────────────────────── */
@@ -26,7 +26,6 @@
 .slidev-layout code,
 .slidev-layout pre,
 .slidev-layout .mono,
-.slidev-layout .eyebrow,
 .slidev-layout .meta-mono,
 .slidev-layout .meta,
 .slidev-layout .live-dot,
@@ -163,11 +162,12 @@
 }
 
 .eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.8rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--garaje-fg-muted-light);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   margin: 0;
 }
 
@@ -467,10 +467,11 @@
 .dark .analogy-card { background: rgba(255, 255, 255, 0.03); }
 
 .analogy-tag {
-  font-family: 'IBM Plex Mono', monospace !important;
-  font-size: 0.72rem;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 0.78rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   color: var(--garaje-fg-muted-light);
   margin: 0;
 }
@@ -486,8 +487,8 @@
 }
 
 .analogy-foot {
-  font-family: 'IBM Plex Mono', monospace !important;
-  font-size: 0.85rem;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 0.95rem;
   line-height: 1.5;
   color: var(--garaje-fg-muted-light);
   margin: 0;
@@ -588,7 +589,7 @@
 .shift-foot {
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 0.8rem;
-  color: var(--garaje-gray-200);
+  color: var(--garaje-fg-muted-light);
   letter-spacing: 0.03em;
 }
 
@@ -617,7 +618,7 @@
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 0.75rem;
   line-height: 1.5;
-  color: var(--garaje-gray-200);
+  color: var(--garaje-fg-muted-light);
   margin: 0.8rem 0 0;
   max-width: 22rem;
   letter-spacing: 0.02em;
@@ -693,7 +694,7 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--garaje-gray-200);
+  color: var(--garaje-fg-muted-light);
   margin: 0;
 }
 
@@ -710,7 +711,7 @@
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 0.78rem;
   line-height: 1.5;
-  color: var(--garaje-gray-200);
+  color: var(--garaje-fg-muted-light);
   margin: 0;
 }
 

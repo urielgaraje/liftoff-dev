@@ -176,13 +176,10 @@ title: Capa 1 — El techo
       no existe.
     </h2>
     <p class="lead-after">
-      …o <span class="accent-pink">sí</span>, pero no en un<br/>
-      lenguaje entendible.
+      …o <span class="accent-pink">sí</span>, pero no en lenguaje entendible.
     </p>
     <p class="caveat caveat-dark">
-      Un LLM es <span class="mono">P(token | prompt)</span>.<br/>
-      Despejas hacia atrás y existe un prompt<br/>
-      para cualquier output.
+      Un LLM es <span class="mono">P(token | prompt)</span>. Despejas hacia atrás y existe un prompt para cualquier output.
     </p>
   </div>
   <div class="slide-split-right">
