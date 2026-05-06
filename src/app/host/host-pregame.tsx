@@ -205,6 +205,25 @@ export function HostPreGame({ code, playUrl, room }: Props) {
 }
 
 function PlanetBackdrop() {
+  const ringGradient = `linear-gradient(to right,
+    transparent 0%,
+    transparent 4%,
+    rgba(190,215,170,0.6) 11%,
+    rgba(245,250,225,0.92) 18%,
+    rgba(160,195,150,0.6) 26%,
+    rgba(220,235,200,0.75) 32%,
+    rgba(110,150,110,0.45) 40%,
+    transparent 48%,
+    transparent 52%,
+    rgba(110,150,110,0.45) 60%,
+    rgba(220,235,200,0.75) 68%,
+    rgba(160,195,150,0.6) 74%,
+    rgba(245,250,225,0.92) 82%,
+    rgba(190,215,170,0.6) 89%,
+    transparent 96%,
+    transparent 100%
+  )`;
+
   return (
     <div
       aria-hidden
@@ -222,33 +241,22 @@ function PlanetBackdrop() {
           height: "85vw",
         }}
       >
-        {/* Saturn rings — anillo trasero (asoma por arriba/a los lados del planeta) */}
+        {/* Saturn ring TRAS — pasa por detrás del planeta, a la altura del
+            horizonte visible. Los extremos asoman a izquierda/derecha. */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="absolute left-1/2 -translate-x-1/2"
           style={{
-            width: "165%",
-            height: "13%",
-            transform: "translate(-50%, -50%) rotate(-7deg)",
-            background: `linear-gradient(to right,
-              transparent 0%,
-              transparent 6%,
-              rgba(155,180,140,0.55) 14%,
-              rgba(220,235,200,0.75) 22%,
-              rgba(170,195,150,0.55) 30%,
-              transparent 42%,
-              transparent 58%,
-              rgba(170,195,150,0.55) 70%,
-              rgba(220,235,200,0.75) 78%,
-              rgba(155,180,140,0.55) 86%,
-              transparent 94%,
-              transparent 100%
-            )`,
+            top: "78%",
+            width: "215%",
+            height: "16%",
+            transform: "translateX(-50%) rotate(-8deg)",
+            background: ringGradient,
             borderRadius: "50%",
-            filter: "blur(0.5px)",
+            filter: "blur(0.6px)",
           }}
         />
 
-        {/* base esfera sólida verde (Saturno-like) */}
+        {/* base esfera sólida verde */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
@@ -256,13 +264,13 @@ function PlanetBackdrop() {
               radial-gradient(circle at 50% 78%, #74dab0 0%, #4ebd8e 13%, #339f73 28%, #1f785a 50%, #0c3a32 75%, #061018 96%)
             `,
             boxShadow: `
-              0 0 140px rgba(80,210,160,0.28),
-              0 0 280px rgba(80,210,160,0.15)
+              0 0 140px rgba(80,210,160,0.32),
+              0 0 280px rgba(80,210,160,0.18)
             `,
           }}
         />
 
-        {/* bandas atmosféricas finas (estilo gaseoso) */}
+        {/* bandas atmosféricas finas (líneas tipo gaseoso) — opacidad subida */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
@@ -270,30 +278,46 @@ function PlanetBackdrop() {
               repeating-linear-gradient(
                 to bottom,
                 transparent 0%,
-                rgba(160,225,195,0.10) 1.4%,
-                transparent 2.8%,
-                rgba(15,75,55,0.24) 4.2%,
-                transparent 6%,
-                rgba(70,160,115,0.13) 7.5%,
-                transparent 11%
+                rgba(180,235,210,0.22) 1.2%,
+                transparent 2.4%,
+                rgba(10,55,40,0.45) 3.6%,
+                transparent 5.6%,
+                rgba(140,210,170,0.28) 7%,
+                transparent 9.5%,
+                rgba(30,90,65,0.32) 11%,
+                transparent 14%
               )
             `,
             mixBlendMode: "overlay",
           }}
         />
 
-        {/* bandas más anchas — claros y oscuros que dan textura tipo Júpiter/Saturno */}
+        {/* bandas anchas claro/oscuro tipo Saturno — más visibles */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(ellipse 110% 7% at 50% 60%, rgba(180,230,200,0.22) 0%, transparent 75%),
-              radial-gradient(ellipse 110% 5% at 50% 67%, rgba(15,70,50,0.32) 0%, transparent 75%),
-              radial-gradient(ellipse 110% 8% at 50% 75%, rgba(80,180,130,0.18) 0%, transparent 80%),
-              radial-gradient(ellipse 110% 5% at 50% 84%, rgba(15,55,40,0.36) 0%, transparent 75%),
-              radial-gradient(ellipse 110% 6% at 50% 91%, rgba(110,200,160,0.18) 0%, transparent 80%)
+              radial-gradient(ellipse 120% 6% at 50% 56%, rgba(220,245,220,0.45) 0%, transparent 80%),
+              radial-gradient(ellipse 120% 5% at 50% 62%, rgba(10,55,40,0.5) 0%, transparent 80%),
+              radial-gradient(ellipse 120% 8% at 50% 70%, rgba(150,220,180,0.35) 0%, transparent 82%),
+              radial-gradient(ellipse 120% 5% at 50% 78%, rgba(8,45,32,0.55) 0%, transparent 80%),
+              radial-gradient(ellipse 120% 7% at 50% 85%, rgba(180,235,200,0.32) 0%, transparent 82%),
+              radial-gradient(ellipse 120% 4% at 50% 92%, rgba(8,40,28,0.5) 0%, transparent 80%)
             `,
             mixBlendMode: "multiply",
+          }}
+        />
+
+        {/* manchas tipo tormenta (gigantes oscuras) */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `
+              radial-gradient(ellipse 8% 4% at 35% 76%, rgba(5,40,28,0.7) 0%, transparent 70%),
+              radial-gradient(ellipse 6% 3% at 62% 82%, rgba(5,35,25,0.6) 0%, transparent 70%),
+              radial-gradient(ellipse 5% 2.5% at 78% 70%, rgba(220,250,225,0.5) 0%, transparent 70%)
+            `,
+            mixBlendMode: "overlay",
           }}
         />
 
@@ -302,18 +326,18 @@ function PlanetBackdrop() {
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(ellipse 70% 14% at 50% 100%, rgba(0,18,12,0.55) 0%, transparent 75%),
-              radial-gradient(ellipse 70% 14% at 50% 0%, rgba(0,18,12,0.5) 0%, transparent 75%)
+              radial-gradient(ellipse 70% 14% at 50% 100%, rgba(0,18,12,0.6) 0%, transparent 75%),
+              radial-gradient(ellipse 70% 14% at 50% 0%, rgba(0,18,12,0.55) 0%, transparent 75%)
             `,
           }}
         />
 
-        {/* terminator (oscurece lateralmente para sensación de esfera) */}
+        {/* terminator (sombra de borde) */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
             background: `
-              radial-gradient(circle at 50% 80%, transparent 0%, transparent 32%, rgba(0,8,12,0.5) 72%, rgba(0,4,8,0.9) 100%)
+              radial-gradient(circle at 50% 80%, transparent 0%, transparent 30%, rgba(0,8,12,0.55) 72%, rgba(0,4,8,0.92) 100%)
             `,
           }}
         />
@@ -323,42 +347,41 @@ function PlanetBackdrop() {
           className="absolute inset-0 rounded-full"
           style={{
             background:
-              "radial-gradient(ellipse 32% 14% at 48% 92%, rgba(225,255,235,0.32) 0%, transparent 70%)",
+              "radial-gradient(ellipse 30% 13% at 48% 93%, rgba(225,255,235,0.36) 0%, transparent 70%)",
             mixBlendMode: "screen",
           }}
         />
 
         {/* atmósfera exterior pulsante */}
         <motion.div
-          animate={{ opacity: [0.5, 0.75, 0.5] }}
+          animate={{ opacity: [0.55, 0.8, 0.55] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           className="absolute inset-[-2.5%] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, transparent 48%, rgba(110,220,170,0.28) 50.5%, rgba(110,220,170,0.1) 53%, transparent 57%)",
+              "radial-gradient(circle, transparent 48%, rgba(110,220,170,0.32) 50.5%, rgba(110,220,170,0.12) 53%, transparent 57%)",
           }}
         />
 
-        {/* Saturn rings — parte delantera (cruza por delante del planeta) */}
+        {/* Saturn ring DELANTE — la parte del anillo que pasa por delante del
+            planeta visible (cruza el horizonte verde). Solo el segmento
+            central (donde cubre el planeta). */}
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="absolute left-1/2 -translate-x-1/2"
           style={{
-            width: "172%",
-            height: "11%",
-            transform: "translate(-50%, calc(-50% + 1.2%)) rotate(-7deg)",
+            top: "82%",
+            width: "215%",
+            height: "13%",
+            transform: "translateX(-50%) rotate(-8deg)",
             background: `linear-gradient(to right,
               transparent 0%,
-              transparent 16%,
-              rgba(170,195,150,0.0) 22%,
-              rgba(190,215,170,0.55) 30%,
-              rgba(235,245,215,0.75) 38%,
-              rgba(170,195,150,0.5) 45%,
-              transparent 50%,
-              transparent 50%,
-              rgba(170,195,150,0.5) 55%,
-              rgba(235,245,215,0.75) 62%,
-              rgba(190,215,170,0.55) 70%,
-              transparent 78%,
+              transparent 32%,
+              rgba(220,235,200,0.0) 38%,
+              rgba(245,250,225,0.65) 44%,
+              rgba(190,215,170,0.5) 50%,
+              rgba(245,250,225,0.65) 56%,
+              rgba(220,235,200,0.0) 62%,
+              transparent 68%,
               transparent 100%
             )`,
             borderRadius: "50%",
