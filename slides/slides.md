@@ -1,6 +1,6 @@
 ---
 theme: default
-title: No es el prompt, es el entorno
+titleTemplate: 'No es el prompt, es el entorno'
 info: |
   Charla ~30 min sobre cómo se construye software con IA en 2026.
   Las cuatro capas: prompt → context → harness → agentic.
@@ -17,6 +17,7 @@ fonts:
 layout: garaje
 chapter: Intro
 page: 1
+title: Memes intro
 ---
 
 <div class="meme-stack">
@@ -32,6 +33,7 @@ layout: cover
 chapter: Portada
 page: 2
 dark: true
+title: Portada
 ---
 
 <h1>
@@ -433,11 +435,19 @@ dark: true
 title: Volvamos al agente
 ---
 
-<div class="slide-body slide-end">
-  <p class="eyebrow">Volvamos al agente</p>
-  <h2 class="lead-xl">
-    Veamos qué construyó<br/>
-    <span class="accent-pink">Claude</span>.
-  </h2>
-  <p class="meta-mono">→ liftoff.local</p>
+<div class="slide-split">
+  <div class="slide-split-left">
+    <p class="eyebrow">Volvamos al agente</p>
+    <h2 class="lead">
+      Veamos qué construyó<br/>
+      <span class="accent-pink">Claude</span>.
+    </h2>
+    <p class="meta-mono">→ liftoff.local</p>
+  </div>
+  <div class="slide-split-right">
+    <div class="meme-stack meme-stack-end">
+      <img src="/memes/layers.jpeg" class="meme meme-end-1" alt="layers" />
+      <img src="/memes/end.jpg" class="meme meme-end-2" alt="end" v-click="1" />
+    </div>
+  </div>
 </div>
