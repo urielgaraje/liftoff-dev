@@ -172,6 +172,18 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
     };
   }, [playerId, room.players]);
 
+  const selfRank = useMemo<number | null>(() => {
+    if (!playerId) return null;
+    const ranked = [...room.players].sort((a, b) => {
+      const va = room.progress[a.id] ?? 0;
+      const vb = room.progress[b.id] ?? 0;
+      if (vb !== va) return vb - va;
+      return a.nickname.localeCompare(b.nickname);
+    });
+    const idx = ranked.findIndex((x) => x.id === playerId);
+    return idx >= 0 ? idx + 1 : null;
+  }, [playerId, room.players, room.progress]);
+
   if (room.loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -190,6 +202,8 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
         durationMs={room.stage.durationMs}
         init={room.stage.init}
         selfPlayer={selfPlayer}
+        selfRank={selfRank}
+        totalPlayers={room.players.length}
       />
     );
   }

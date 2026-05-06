@@ -3,18 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { TypingParagraph } from "./typing-paragraph";
-import { AltitudeMeter } from "./altitude-meter";
-import { Rocket } from "@/components/game/rocket";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  SKIN_BG_CLASS,
-  SKIN_TEXT_CLASS,
-  type RocketSkin,
-} from "@/lib/game/skins";
 import type { SelfPlayer } from "@/app/play/play-client";
 
 const PROGRESS_INTERVAL_MS = 500;
 const ERROR_FLASH_MS = 150;
+
+const STAGE_TABS: ReadonlyArray<{ index: number; label: string }> = [
+  { index: 0, label: "Despegue" },
+  { index: 1, label: "Órbita" },
+  { index: 2, label: "Aproximación" },
+];
 
 type Props = {
   code: string;
@@ -23,6 +23,8 @@ type Props = {
   durationMs: number;
   init: { paragraph: string };
   selfPlayer: SelfPlayer | null;
+  selfRank: number | null;
+  totalPlayers: number;
 };
 
 export function TypingStage({
@@ -31,7 +33,8 @@ export function TypingStage({
   startedAt,
   durationMs,
   init,
-  selfPlayer,
+  selfRank,
+  totalPlayers,
 }: Props) {
   const paragraph = init.paragraph;
   const startMs = new Date(startedAt).getTime();
@@ -128,50 +131,53 @@ export function TypingStage({
       : remainingS <= 10
         ? "text-accent-magenta"
         : "text-accent-cyan";
-  const ratio = paragraph.length > 0 ? cursor / paragraph.length : 0;
 
   return (
     <main className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-bg-tertiary/60 px-8 py-5">
-        <div className="flex items-center gap-3">
-          <span className="rounded-full bg-bg-secondary/70 px-3 py-1 font-mono text-[10px] tracking-[0.35em] text-accent-cyan ring-1 ring-bg-tertiary backdrop-blur">
-            STAGE 1 · DESPEGUE
-          </span>
+      <header className="grid grid-cols-[1fr_auto_1fr] items-start gap-6 px-10 py-8">
+        <div />
+        <div className="flex flex-col items-center gap-2">
+          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
+            ETAPA
+          </p>
+          <div className="flex items-center gap-2 font-mono text-xs">
+            {STAGE_TABS.map((t) => {
+              const active = t.index === stageIndex;
+              const done = t.index < stageIndex;
+              return (
+                <span
+                  key={t.index}
+                  className={cn(
+                    "rounded-full px-3 py-1 ring-1 transition",
+                    active &&
+                      "bg-bg-secondary text-accent-yellow ring-accent-yellow/50",
+                    done && "text-fg-secondary ring-bg-tertiary",
+                    !active && !done && "text-fg-muted ring-bg-tertiary/60",
+                  )}
+                >
+                  {t.label}
+                </span>
+              );
+            })}
+          </div>
         </div>
-        <AnimatePresence mode="popLayout">
-          <motion.p
-            key={remainingS}
-            initial={{ opacity: 0, y: -8, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.92 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className={cn(
-              "font-mono text-5xl font-medium tabular-nums tracking-tight transition-colors",
-              countdownColor,
-            )}
-            data-testid="typing-timer"
-          >
-            {remainingS}s
-          </motion.p>
-        </AnimatePresence>
-        <div className="flex items-center gap-3">
-          <motion.span
-            key={cursor}
-            initial={{ y: -4, opacity: 0.6, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="rounded-full bg-bg-secondary/70 px-3 py-1.5 font-mono text-xs text-fg-secondary tabular-nums ring-1 ring-bg-tertiary backdrop-blur"
+        <div className="flex flex-col items-end gap-1">
+          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
+            POSICIÓN
+          </p>
+          <p
+            className="font-mono text-base text-accent-magenta tabular-nums"
             data-testid="typing-altitude"
           >
-            <span className="text-accent-cyan">{cursor}</span>
-            <span className="ml-1 text-fg-muted">m</span>
-          </motion.span>
+            <span className="text-base">#{selfRank ?? "—"}</span>
+            <span className="ml-1 text-fg-muted">de {totalPlayers}</span>
+          </p>
         </div>
       </header>
 
-      <div className="flex flex-1 items-center justify-center px-8 py-10">
+      <div className="flex flex-1 items-center justify-center px-10">
         <div
-          className="flex w-full max-w-5xl flex-col gap-5"
+          className="w-full max-w-4xl"
           data-testid="typing-stage"
         >
           <TypingParagraph
@@ -179,49 +185,34 @@ export function TypingStage({
             cursor={cursor}
             errorFlash={errorFlash}
           />
-          <p className="text-center font-mono text-xs tracking-wider text-fg-muted">
-            teclea para subir · errores no atraviesan
-          </p>
         </div>
       </div>
 
-      <footer className="flex items-end justify-between gap-6 px-8 py-6">
-        <div className="flex items-center gap-3">
-          {selfPlayer ? (
-            <>
-              <span
-                className={cn(
-                  "flex size-9 items-center justify-center rounded-lg ring-1 ring-bg-tertiary",
-                  SKIN_BG_CLASS[selfPlayer.rocketSkin],
-                  "bg-opacity-25",
-                )}
-              >
-                <Rocket skin={selfPlayer.rocketSkin} size={20} />
-              </span>
-              <div className="flex flex-col">
-                <span className="font-mono text-[10px] tracking-[0.3em] text-fg-muted">
-                  TÚ
-                </span>
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    SKIN_TEXT_CLASS[selfPlayer.rocketSkin],
-                  )}
-                >
-                  {selfPlayer.nickname}
-                </span>
-              </div>
-            </>
-          ) : (
-            <span className="font-mono text-[10px] tracking-[0.3em] text-fg-muted">
-              EN PISTA
-            </span>
-          )}
+      <footer className="flex flex-col items-center gap-3 px-10 py-10">
+        <div className="flex items-baseline gap-2 font-mono">
+          <span className="text-[10px] tracking-[0.4em] text-fg-muted">
+            QUEDAN
+          </span>
+          <AnimatePresence mode="popLayout">
+            <motion.span
+              key={remainingS}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className={cn(
+                "text-2xl tabular-nums",
+                countdownColor,
+              )}
+              data-testid="typing-timer"
+            >
+              {remainingS}s
+            </motion.span>
+          </AnimatePresence>
         </div>
-        <AltitudeMeter
-          ratio={ratio}
-          skin={(selfPlayer?.rocketSkin ?? "cyan") as RocketSkin}
-        />
+        <Button variant="ghost" disabled className="h-7 text-xs text-fg-muted">
+          Abandonar
+        </Button>
       </footer>
     </main>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 type Star = {
   x: number;
@@ -33,6 +34,9 @@ function spawnStars(w: number, h: number): Star[] {
 
 export function StarField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pathname = usePathname();
+  const speedRef = useRef(1);
+  speedRef.current = pathname?.startsWith("/host") ? 4 : 1;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -62,9 +66,10 @@ export function StarField() {
       const w = window.innerWidth;
       const h = window.innerHeight;
       ctx.clearRect(0, 0, w, h);
+      const speed = speedRef.current;
       for (const s of stars) {
         if (!reduceMotion) {
-          s.y += s.vy;
+          s.y += s.vy * speed;
           if (s.y > h + 2) {
             s.y = -2;
             s.x = Math.random() * w;

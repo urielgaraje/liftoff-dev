@@ -92,7 +92,7 @@ export function HostPodium({ leaderboard }: { leaderboard: LeaderboardEntry[] })
                     filter: `drop-shadow(0 0 ${isFirst ? 16 : 10}px var(--color-rocket-${skin}))`,
                   }}
                 >
-                  <Rocket skin={skin} size={size} />
+                  <Rocket skin={skin} size={size} animate />
                 </span>
                 <span
                   className={cn(

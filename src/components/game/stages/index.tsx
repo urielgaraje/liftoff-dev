@@ -12,6 +12,8 @@ export type StageRendererProps = {
   durationMs: number;
   init: unknown;
   selfPlayer: SelfPlayer | null;
+  selfRank: number | null;
+  totalPlayers: number;
 };
 
 const RENDERERS: Record<string, ComponentType<StageRendererProps>> = {

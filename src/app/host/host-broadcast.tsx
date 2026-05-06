@@ -138,7 +138,7 @@ export function HostBroadcast({ room }: Props) {
                         filter: `drop-shadow(0 0 12px var(--color-rocket-${skin}))`,
                       }}
                     >
-                      <Rocket skin={skin} size={56} />
+                      <Rocket skin={skin} size={56} animate />
                     </span>
                     <span className="rounded-full bg-bg-secondary/85 px-2 py-0.5 font-mono text-xs text-fg-primary backdrop-blur">
                       {p.nickname}
