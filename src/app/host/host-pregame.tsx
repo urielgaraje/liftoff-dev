@@ -205,73 +205,21 @@ export function HostPreGame({ code, playUrl, room }: Props) {
 }
 
 function PlanetBackdrop() {
-  const ringGradient = `linear-gradient(to right,
-    rgba(170,195,150,0.85) 0%,
-    rgba(210,230,190,0.95) 8%,
-    rgba(245,250,225,1) 16%,
-    rgba(190,215,170,0.8) 24%,
-    rgba(220,240,200,0.95) 32%,
-    rgba(150,185,140,0.75) 40%,
-    rgba(210,235,195,0.85) 46%,
-    rgba(150,185,140,0.6) 50%,
-    rgba(210,235,195,0.85) 54%,
-    rgba(150,185,140,0.75) 60%,
-    rgba(220,240,200,0.95) 68%,
-    rgba(190,215,170,0.8) 76%,
-    rgba(245,250,225,1) 84%,
-    rgba(210,230,190,0.95) 92%,
-    rgba(170,195,150,0.85) 100%
-  )`;
-
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {/* Saturn ring trasero — pasa por DETRÁS del planeta. Posicionado
-          directamente en el viewport (no dentro del wrapper) para que sus
-          extremos lleguen libremente a los lados sin ser cortados.
-          Inclinado en diagonal para perspectiva tipo Saturno. */}
-      <div
-        className="absolute origin-center"
-        style={{
-          left: "-12vw",
-          right: "-12vw",
-          top: "7vw",
-          height: "4vw",
-          background: ringGradient,
-          borderRadius: "50%",
-          filter: "blur(0.8px)",
-          opacity: 0.55,
-          transform: "rotate(-5deg)",
-        }}
-      />
-      {/* segundo aro fino más afuera (división tipo Saturno) */}
-      <div
-        className="absolute origin-center"
-        style={{
-          left: "-10vw",
-          right: "-10vw",
-          top: "10.6vw",
-          height: "1.6vw",
-          background: ringGradient,
-          borderRadius: "50%",
-          filter: "blur(0.4px)",
-          opacity: 0.5,
-          transform: "rotate(-5deg)",
-        }}
-      />
-
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute left-1/2 -translate-x-1/2"
         style={{
-          top: "-50vw",
-          width: "60vw",
-          height: "60vw",
+          top: "-58vw",
+          width: "70vw",
+          height: "70vw",
         }}
       >
         {/* base esfera sólida verde */}
@@ -326,17 +274,60 @@ function PlanetBackdrop() {
           }}
         />
 
-        {/* manchas tipo tormenta (gigantes oscuras) */}
-        <div
+        {/* nubes/tormentas en movimiento — simulan rotación del planeta */}
+        <div className="absolute inset-0 overflow-hidden rounded-full">
+          <motion.div
+            className="absolute inset-y-0"
+            style={{
+              left: "-100%",
+              width: "300%",
+              background: `
+                radial-gradient(ellipse 7% 3% at 8% 78%, rgba(5,40,28,0.7) 0%, transparent 70%),
+                radial-gradient(ellipse 5% 2.2% at 18% 82%, rgba(5,35,25,0.6) 0%, transparent 70%),
+                radial-gradient(ellipse 4% 1.8% at 26% 72%, rgba(220,250,225,0.55) 0%, transparent 70%),
+                radial-gradient(ellipse 8% 3.5% at 36% 80%, rgba(8,42,30,0.5) 0%, transparent 70%),
+                radial-gradient(ellipse 5% 2% at 45% 74%, rgba(180,240,210,0.45) 0%, transparent 70%),
+                radial-gradient(ellipse 6% 2.5% at 55% 82%, rgba(5,38,28,0.6) 0%, transparent 70%),
+                radial-gradient(ellipse 4% 1.6% at 64% 76%, rgba(220,250,225,0.5) 0%, transparent 70%),
+                radial-gradient(ellipse 7% 3% at 74% 80%, rgba(8,42,30,0.55) 0%, transparent 70%),
+                radial-gradient(ellipse 5% 2% at 85% 73%, rgba(180,240,210,0.45) 0%, transparent 70%),
+                radial-gradient(ellipse 6% 2.6% at 92% 78%, rgba(5,40,28,0.6) 0%, transparent 70%)
+              `,
+              mixBlendMode: "overlay",
+            }}
+            animate={{ x: ["0%", "-66.66%"] }}
+            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+
+        {/* aurora — destello auroral cyan-verde que recorre el planeta */}
+        <div className="absolute inset-0 overflow-hidden rounded-full">
+          <motion.div
+            className="absolute inset-y-0"
+            style={{
+              left: "-50%",
+              width: "200%",
+              background: `
+                radial-gradient(ellipse 16% 8% at 50% 72%, rgba(140,255,210,0.45) 0%, transparent 75%)
+              `,
+              mixBlendMode: "screen",
+              filter: "blur(2px)",
+            }}
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+
+        {/* tormenta principal pulsante (un "ojo" tipo Júpiter) */}
+        <motion.div
           className="absolute inset-0 rounded-full"
           style={{
-            background: `
-              radial-gradient(ellipse 8% 4% at 35% 76%, rgba(5,40,28,0.7) 0%, transparent 70%),
-              radial-gradient(ellipse 6% 3% at 62% 82%, rgba(5,35,25,0.6) 0%, transparent 70%),
-              radial-gradient(ellipse 5% 2.5% at 78% 70%, rgba(220,250,225,0.5) 0%, transparent 70%)
-            `,
+            background:
+              "radial-gradient(ellipse 5% 2.5% at 42% 80%, rgba(255,210,180,0.7) 0%, rgba(180,90,60,0.4) 30%, transparent 70%)",
             mixBlendMode: "overlay",
           }}
+          animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.04, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
 
         {/* polos más oscuros */}
