@@ -20,12 +20,20 @@ page: 1
 title: Memes intro
 ---
 
+<div class="slide-body slide-welcome">
+  <p class="eyebrow">Garaje · Formaciones de IA</p>
+  <h2 class="lead">
+    Bienvenido a<br/>
+    <span class="accent-pink">formaciones de IA</span>.
+  </h2>
+</div>
+
 <div class="meme-stack">
-  <img src="/memes/01-no-vine-a-jugal.png" class="meme meme-1" alt="no vine a jugal" />
-  <img src="/memes/02-how-to-fly.jpg" class="meme meme-2" alt="how to fly" v-click="1" />
-  <img src="/memes/03-verdad-1.jpg" class="meme meme-3" alt="verdad 1" v-click="2" />
-  <img src="/memes/04-verdad-2.jpg" class="meme meme-4" alt="verdad 2" v-click="3" />
-  <img src="/memes/05-modo-serio.jpeg" class="meme meme-5" alt="modo serio" v-click="4" />
+  <img src="/memes/01-no-vine-a-jugal.png" class="meme meme-1" alt="no vine a jugal" v-click="1" />
+  <img src="/memes/02-how-to-fly.jpg" class="meme meme-2" alt="how to fly" v-click="2" />
+  <img src="/memes/03-verdad-1.jpg" class="meme meme-3" alt="verdad 1" v-click="3" />
+  <img src="/memes/04-verdad-2.jpg" class="meme meme-4" alt="verdad 2" v-click="4" />
+  <img src="/memes/05-modo-serio.jpeg" class="meme meme-5" alt="modo serio" v-click="5" />
 </div>
 
 ---

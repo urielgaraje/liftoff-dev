@@ -629,6 +629,19 @@
 .bigstat-tight { margin: 0; gap: 1rem; }
 .bigstat-tight .stat { font-size: 4.6rem; }
 
+/* ── slide 1 welcome ─────────────────────────── */
+
+.slide-welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 0;
+  padding: 0 3rem;
+  max-width: none;
+}
+
 /* ── meme stack intro ────────────────────────── */
 
 .meme-stack {
