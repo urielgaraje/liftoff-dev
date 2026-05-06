@@ -6,36 +6,35 @@ Race multijugador de cohetes hacia un planeta. Hasta 50 jugadores compiten en di
 
 1. **`mission.md`** — qué es el producto y por qué existe (inmutable).
 2. **`CLAUDE.md`** — convenciones técnicas, stack, naming, anti-patterns.
-3. **`design/liftoff.pen`** — diseño visual de las 10 vistas (abrir con Pencil).
-4. **`docs/`** — research, charla, historial. Lectura opcional, contexto humano.
+3. **`harness.md`** — cómo está montado el setup externo (servicios, MCPs, gotchas).
+4. **`progress.md`** — estado actual del build y plan de continuación.
+5. **`design/liftoff.pen`** — diseño visual de las 8 vistas (abrir con Pencil).
+6. **`docs/`** — research, charla, historial. Lectura opcional.
 
 ## Estructura
 
 ```
 liftoff/
 ├── README.md               (este archivo)
-├── mission.md              ⭐ qué construimos y por qué
+├── mission.md              ⭐ qué construimos y por qué (inmutable)
 ├── CLAUDE.md               🔧 cómo lo construimos
+├── harness.md              🛠️ setup externo + gotchas
+├── progress.md             📍 estado actual y siguiente paso
+├── src/                    código de la app
 ├── design/
-│   └── liftoff.pen         🎨 10 vistas en Pencil
-└── docs/
-    ├── README.md           índice de la carpeta
-    ├── talk/               materiales de la charla (4 capas)
-    ├── garaje-research/    workflow original que detonó la idea
-    └── experiments/        pruebas técnicas durante el discovery
+│   └── liftoff.pen         🎨 8 vistas en Pencil
+└── docs/                   research, charla, experimentos
 ```
 
 ## Estado
 
-Pre-build. El siguiente paso es:
-1. Generar `tasks.jsonl` desde mission con un agente `spec-author`.
-2. Definir agentes (`backend-dev`, `frontend-dev`, `test-author`, etc.) en `.claude/agents/`.
-3. Primera pasada single-agent (baseline para A/B).
-4. Segunda pasada multi-agente con harness (la apuesta).
+`starter-rich-v1`. Scaffold completo y deployado, cero feature aún. Ver `progress.md` para detalle.
+
+App: https://liftoff-app-dev.vercel.app/
 
 ## Stack
 
-Next.js 15 · Tailwind · shadcn/ui · Framer Motion · Pusher · Neon Postgres · Drizzle · Playwright. Deploy: Vercel + Neon + Pusher.
+Next.js 16 · Tailwind v4 · shadcn/ui · Framer Motion · Pusher · Neon Postgres · Drizzle · Playwright · Vitest. Deploy: Vercel + Neon + Pusher.
 
 ## Idea base
 
