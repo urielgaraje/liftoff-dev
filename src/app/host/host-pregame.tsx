@@ -1,18 +1,24 @@
 "use client";
 
-import { Check, Clipboard, Users } from "lucide-react";
+import { Check, Clipboard, Play, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Rocket } from "@/components/game/rocket";
 import { Button } from "@/components/ui/button";
-import { type RocketSkin } from "@/lib/game/skins";
+import {
+  SKIN_TEXT_CLASS,
+  type RocketSkin,
+} from "@/lib/game/skins";
 import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
+import { cn } from "@/lib/utils";
 
 type Props = {
   code: string;
   playUrl: string;
   room: ReturnType<typeof useRoomChannel>;
 };
+
+const VISIBLE_ROCKETS = 8;
 
 export function HostPreGame({ code, playUrl, room }: Props) {
   const [copied, setCopied] = useState(false);
@@ -45,88 +51,177 @@ export function HostPreGame({ code, playUrl, room }: Props) {
     }
   };
 
+  const players = room.players;
+  const visiblePlayers = players.slice(0, VISIBLE_ROCKETS);
+  const hiddenCount = players.length - visiblePlayers.length;
+  const hasPlayers = players.length > 0;
+
   return (
     <main className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
+      <header className="flex items-center justify-between p-6">
         <motion.p
           animate={{ opacity: [0.75, 1, 0.75] }}
           transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-          className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
+          className="font-mono text-xs tracking-[0.4em] text-accent-cyan"
         >
           LIFTOFF · PRE-PARTIDA
         </motion.p>
-        <div className="flex items-center gap-2 rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
+        <div className="flex items-center gap-2 rounded-full bg-bg-tertiary/80 px-3 py-1.5 font-mono text-xs text-fg-secondary backdrop-blur">
           <Users size={14} />
-          <span data-testid="host-count">{room.players.length}/50</span>
+          <span data-testid="host-count">{players.length}/50</span>
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-1 gap-8 p-8 lg:grid-cols-[1fr_2fr]">
-        <section className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-bg-secondary p-8 ring-1 ring-bg-tertiary">
-          <p className="font-mono text-xs tracking-wider text-fg-muted">CÓDIGO DE SALA</p>
-          <p
+      <div className="flex flex-1 flex-col items-center gap-12 px-8 pb-12 pt-4">
+        <div className="flex flex-col items-center gap-3 pt-2">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="relative size-28 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(34,211,238,0.25) 0%, rgba(34,211,238,0.08) 50%, transparent 75%)",
+              boxShadow: "0 0 60px rgba(34,211,238,0.3)",
+            }}
+            aria-hidden
+          >
+            <motion.div
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-2 rounded-full bg-accent-cyan/40 blur-md"
+            />
+          </motion.div>
+          <motion.p
+            animate={{ opacity: [0.5, 0.9, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="font-mono text-[10px] tracking-[0.4em] text-fg-muted"
+          >
+            DESTINO · PLANETA LIFTOFF
+          </motion.p>
+        </div>
+
+        <div className="relative flex flex-col items-center gap-5">
+          <motion.div
+            aria-hidden
+            animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-[-22px] rounded-3xl"
+            style={{
+              border: "1.5px solid var(--color-accent-cyan)",
+              boxShadow: "0 0 40px rgba(34,211,238,0.45)",
+              opacity: 0.55,
+            }}
+          />
+          <motion.div
+            aria-hidden
+            animate={{ scale: [1, 1.14, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-[-44px] rounded-3xl"
+            style={{ border: "1px solid var(--color-accent-cyan)" }}
+          />
+          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
+            CÓDIGO DE SALA
+          </p>
+          <motion.p
             data-testid="host-code"
-            className="font-mono text-8xl font-medium tracking-[0.15em] text-fg-primary"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="font-mono text-[120px] font-medium tracking-[0.2em] text-fg-primary leading-none"
+            style={{
+              textShadow:
+                "0 0 50px rgba(34,211,238,0.5), 0 0 12px rgba(34,211,238,0.6)",
+            }}
           >
             {code}
-          </p>
-          <div className="flex w-full flex-col gap-2">
-            <p className="font-mono text-xs tracking-wider text-fg-muted">URL</p>
-            <div className="rounded-full bg-bg-tertiary px-4 py-2 font-mono text-xs text-fg-secondary">
-              <span className="block truncate">{playUrl}</span>
-            </div>
-            <Button
+          </motion.p>
+          <div className="flex items-center gap-2 rounded-full bg-bg-secondary/80 px-4 py-1.5 font-mono text-xs text-fg-secondary ring-1 ring-bg-tertiary backdrop-blur">
+            <span className="truncate">{playUrl}</span>
+            <button
               type="button"
-              variant="secondary"
               onClick={onCopy}
               data-testid="host-copy"
-              className="h-10"
+              className={cn(
+                "ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] tracking-wider transition",
+                copied
+                  ? "bg-accent-cyan/20 text-accent-cyan"
+                  : "bg-bg-tertiary/80 text-fg-secondary hover:bg-bg-tertiary",
+              )}
             >
-              {copied ? <Check size={16} /> : <Clipboard size={16} />}
-              {copied ? "Copiado" : "Copiar URL"}
-            </Button>
+              {copied ? <Check size={11} /> : <Clipboard size={11} />}
+              {copied ? "COPIADO" : "COPIAR"}
+            </button>
           </div>
-        </section>
+        </div>
 
-        <section className="flex flex-col gap-4 rounded-2xl bg-bg-secondary p-8 ring-1 ring-bg-tertiary">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs tracking-wider text-fg-muted">
-              JUGADORES CONECTADOS
-            </p>
-            <p className="font-mono text-xs text-accent-cyan">
-              {room.players.length}/50
-            </p>
-          </div>
-
-          {room.players.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-fg-muted">
-              Comparte el código y la URL con los jugadores
-            </div>
-          ) : (
+        <div className="flex w-full max-w-3xl flex-col items-center gap-3">
+          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
+            COHETES EN PISTA · {players.length}/50
+          </p>
+          {hasPlayers ? (
             <ul
-              className="grid flex-1 grid-cols-2 gap-3 md:grid-cols-3"
+              className="flex flex-wrap items-center justify-center gap-4"
               data-testid="host-player-list"
             >
-              {room.players.map((p) => (
-                <li
+              {visiblePlayers.map((p, i) => (
+                <motion.li
                   key={p.id}
                   data-testid={`host-player-${p.nickname}`}
-                  className="flex items-center gap-3 rounded-xl bg-bg-tertiary p-3"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut", delay: i * 0.04 }}
+                  className="flex flex-col items-center gap-1"
                 >
-                  <Rocket skin={p.rocketSkin as RocketSkin} size={24} />
-                  <span className="truncate text-sm text-fg-primary">{p.nickname}</span>
-                </li>
+                  <span
+                    style={{
+                      filter: `drop-shadow(0 0 8px var(--color-rocket-${p.rocketSkin}))`,
+                    }}
+                  >
+                    <Rocket
+                      skin={p.rocketSkin as RocketSkin}
+                      size={28}
+                      animate
+                      intensity={0.7}
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      "max-w-[5rem] truncate font-mono text-[10px]",
+                      SKIN_TEXT_CLASS[p.rocketSkin as RocketSkin],
+                    )}
+                  >
+                    {p.nickname}
+                  </span>
+                </motion.li>
               ))}
+              {hiddenCount > 0 && (
+                <li className="flex flex-col items-center gap-1">
+                  <span className="flex size-7 items-center justify-center rounded-full bg-bg-secondary/70 ring-1 ring-bg-tertiary">
+                    <span className="font-mono text-[10px] text-fg-secondary">
+                      +{hiddenCount}
+                    </span>
+                  </span>
+                  <span className="font-mono text-[10px] text-fg-muted">más</span>
+                </li>
+              )}
             </ul>
+          ) : (
+            <p className="font-mono text-xs text-fg-muted">
+              comparte el código para que se conecten
+            </p>
           )}
+        </div>
 
+        <div className="flex flex-col items-center gap-2">
           <Button
             type="button"
             onClick={onStart}
-            disabled={starting || room.players.length === 0}
-            className="h-12 text-base"
+            disabled={starting || !hasPlayers}
+            className="h-14 gap-3 rounded-full px-12 text-base font-semibold shadow-[0_0_40px_rgba(34,211,238,0.45)]"
             data-testid="host-start"
           >
+            <Play size={18} fill="currentColor" />
             {starting ? "Iniciando…" : "Iniciar carrera"}
           </Button>
           {startError && (
@@ -134,12 +229,12 @@ export function HostPreGame({ code, playUrl, room }: Props) {
               {startError}
             </p>
           )}
-          {room.players.length === 0 && !startError && (
-            <p className="text-center font-mono text-xs text-fg-muted">
+          {!hasPlayers && !startError && (
+            <p className="font-mono text-[10px] tracking-wider text-fg-muted">
               esperando al menos un jugador
             </p>
           )}
-        </section>
+        </div>
       </div>
     </main>
   );
