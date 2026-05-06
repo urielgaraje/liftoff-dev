@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
+import { StarField } from "@/components/shared/star-field";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,7 +28,7 @@ export default function RootLayout({
       lang="es"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col bg-bg-primary font-sans">
         <div
           data-mobile-gate
           className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-primary p-8 text-center lg:hidden"
@@ -42,7 +43,10 @@ export default function RootLayout({
             Liftoff necesita teclado físico y pantalla de al menos 1024px.
           </p>
         </div>
-        <div className="hidden lg:contents">{children}</div>
+        <div className="hidden lg:contents">
+          <StarField />
+          {children}
+        </div>
       </body>
     </html>
   );

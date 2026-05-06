@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { HostPodium } from "@/components/game/host-podium";
 import { Rocket } from "@/components/game/rocket";
 import { type RocketSkin } from "@/lib/game/skins";
 import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
@@ -45,7 +47,7 @@ export function HostBroadcast({ room }: Props) {
     now - room.lastEnded.endedAt < STAGE_ENDED_BANNER_DURATION_MS;
 
   return (
-    <main className="flex min-h-screen flex-col bg-bg-primary">
+    <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
         <p
           className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
@@ -73,6 +75,9 @@ export function HostBroadcast({ room }: Props) {
       </header>
 
       <div className="grid flex-1 grid-cols-[1fr_360px]">
+        {room.status === "ended" && room.lastEnded ? (
+          <HostPodium leaderboard={room.lastEnded.leaderboard} />
+        ) : (
         <section className="relative flex flex-col items-center justify-end overflow-hidden p-12">
           <div
             className="pointer-events-none absolute top-1/2 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-cyan/10 blur-3xl"
@@ -102,23 +107,52 @@ export function HostBroadcast({ room }: Props) {
             {top8.map((p) => {
               const ratio = topValue > 0 ? p.value / topValue : 0;
               const lift = Math.round(ratio * 200);
+              const skin = p.rocketSkin as RocketSkin;
               return (
                 <div
                   key={p.id}
                   data-testid={`broadcast-rocket-${p.nickname}`}
-                  className="flex flex-col items-center gap-2 transition-transform duration-300 ease-out"
-                  style={{ transform: `translateY(-${lift}px)` }}
+                  className="relative flex flex-col items-center"
                 >
-                  <Rocket skin={p.rocketSkin as RocketSkin} size={56} />
-                  <span className="rounded-full bg-bg-secondary px-2 py-0.5 font-mono text-xs text-fg-primary">
-                    {p.nickname}
-                  </span>
-                  <span className="font-mono text-xs text-fg-muted">{p.value}</span>
+                  {lift > 6 && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute left-1/2 bottom-12 z-0 w-[6px] -translate-x-1/2 rounded-full"
+                      style={{
+                        height: `${lift}px`,
+                        background: `linear-gradient(to top, var(--color-rocket-${skin}) 0%, transparent 100%)`,
+                        opacity: 0.7,
+                        filter: `blur(0.5px) drop-shadow(0 0 8px var(--color-rocket-${skin}))`,
+                      }}
+                    />
+                  )}
+                  <motion.div
+                    initial={false}
+                    animate={{ y: -lift }}
+                    transition={{ type: "spring", stiffness: 60, damping: 14 }}
+                    className="relative z-10 flex flex-col items-center gap-2"
+                  >
+                    <span
+                      className="relative inline-flex items-center justify-center"
+                      style={{
+                        filter: `drop-shadow(0 0 12px var(--color-rocket-${skin}))`,
+                      }}
+                    >
+                      <Rocket skin={skin} size={56} />
+                    </span>
+                    <span className="rounded-full bg-bg-secondary/85 px-2 py-0.5 font-mono text-xs text-fg-primary backdrop-blur">
+                      {p.nickname}
+                    </span>
+                    <span className="font-mono text-xs tabular-nums text-fg-muted">
+                      {p.value}
+                    </span>
+                  </motion.div>
                 </div>
               );
             })}
           </div>
         </section>
+        )}
 
         <aside className="flex flex-col gap-2 border-l border-bg-tertiary p-6">
           <div className="flex items-center justify-between">
@@ -161,13 +195,6 @@ export function HostBroadcast({ room }: Props) {
         </aside>
       </div>
 
-      {room.status === "ended" && (
-        <footer className="flex items-center justify-center border-t border-bg-tertiary p-6">
-          <p className="font-mono text-xs tracking-wider text-fg-muted">
-            stages siguientes — slice posterior
-          </p>
-        </footer>
-      )}
     </main>
   );
 }

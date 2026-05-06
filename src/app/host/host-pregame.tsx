@@ -45,7 +45,7 @@ export function HostPreGame({ code, playUrl, room }: Props) {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-bg-primary">
+    <main className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between border-b border-bg-tertiary p-6">
         <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
           LIFTOFF · PRE-PARTIDA

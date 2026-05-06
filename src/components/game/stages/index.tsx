@@ -3,6 +3,7 @@
 import type { ComponentType } from "react";
 import { TypingStage } from "./typing/typing-stage";
 import { UnknownStage } from "@/components/game/unknown-stage";
+import type { SelfPlayer } from "@/app/play/play-client";
 
 export type StageRendererProps = {
   code: string;
@@ -10,6 +11,7 @@ export type StageRendererProps = {
   startedAt: string;
   durationMs: number;
   init: unknown;
+  selfPlayer: SelfPlayer | null;
 };
 
 const RENDERERS: Record<string, ComponentType<StageRendererProps>> = {

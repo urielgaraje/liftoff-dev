@@ -51,7 +51,7 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-12 bg-bg-primary p-8">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-12 p-8">
       <div className="flex flex-col items-center gap-4 text-center">
         <p className="font-mono text-xs tracking-[0.3em] text-accent-cyan">
           5 · 4 · 3 · 2 · 1

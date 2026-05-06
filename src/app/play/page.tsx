@@ -16,5 +16,11 @@ export default async function PlayPage({ searchParams }: { searchParams: SearchP
 
   const playerId = await getPlayerId(code);
 
-  return <PlayClient code={code} alreadyJoined={Boolean(playerId)} />;
+  return (
+    <PlayClient
+      code={code}
+      alreadyJoined={Boolean(playerId)}
+      playerId={playerId}
+    />
+  );
 }

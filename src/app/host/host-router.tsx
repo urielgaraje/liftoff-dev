@@ -11,7 +11,7 @@ export function HostRouter({ code, playUrl }: Props) {
 
   if (room.loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-bg-primary">
+      <main className="flex min-h-screen items-center justify-center">
         <p className="font-mono text-xs text-fg-muted">cargando…</p>
       </main>
     );
