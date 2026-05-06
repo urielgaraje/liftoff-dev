@@ -206,21 +206,21 @@ export function HostPreGame({ code, playUrl, room }: Props) {
 
 function PlanetBackdrop() {
   const ringGradient = `linear-gradient(to right,
-    rgba(170,195,150,0.55) 0%,
-    rgba(210,230,190,0.78) 7%,
-    rgba(245,250,225,0.95) 14%,
-    rgba(190,215,170,0.65) 22%,
-    rgba(220,240,200,0.85) 30%,
-    rgba(140,180,130,0.55) 38%,
-    rgba(210,235,195,0.7) 44%,
-    transparent 50%,
-    rgba(210,235,195,0.7) 56%,
-    rgba(140,180,130,0.55) 62%,
-    rgba(220,240,200,0.85) 70%,
-    rgba(190,215,170,0.65) 78%,
-    rgba(245,250,225,0.95) 86%,
-    rgba(210,230,190,0.78) 93%,
-    rgba(170,195,150,0.55) 100%
+    rgba(170,195,150,0.85) 0%,
+    rgba(210,230,190,0.95) 8%,
+    rgba(245,250,225,1) 16%,
+    rgba(190,215,170,0.8) 24%,
+    rgba(220,240,200,0.95) 32%,
+    rgba(150,185,140,0.75) 40%,
+    rgba(210,235,195,0.85) 46%,
+    rgba(150,185,140,0.6) 50%,
+    rgba(210,235,195,0.85) 54%,
+    rgba(150,185,140,0.75) 60%,
+    rgba(220,240,200,0.95) 68%,
+    rgba(190,215,170,0.8) 76%,
+    rgba(245,250,225,1) 84%,
+    rgba(210,230,190,0.95) 92%,
+    rgba(170,195,150,0.85) 100%
   )`;
 
   return (
@@ -229,6 +229,37 @@ function PlanetBackdrop() {
       className="pointer-events-none absolute inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
+      {/* Saturn ring trasero — pasa por DETRÁS del planeta. Posicionado
+          directamente en el viewport (no dentro del wrapper) para que sus
+          extremos lleguen libremente a los lados sin ser cortados. */}
+      <div
+        className="absolute"
+        style={{
+          left: "-12vw",
+          right: "-12vw",
+          top: "7vw",
+          height: "4vw",
+          background: ringGradient,
+          borderRadius: "50%",
+          filter: "blur(0.8px)",
+          opacity: 0.55,
+        }}
+      />
+      {/* segundo aro fino más afuera (división tipo Saturno) */}
+      <div
+        className="absolute"
+        style={{
+          left: "-10vw",
+          right: "-10vw",
+          top: "10.2vw",
+          height: "1.6vw",
+          background: ringGradient,
+          borderRadius: "50%",
+          filter: "blur(0.4px)",
+          opacity: 0.5,
+        }}
+      />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -240,20 +271,6 @@ function PlanetBackdrop() {
           height: "60vw",
         }}
       >
-        {/* Saturn ring TRAS — extiende muy a los lados del planeta. */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2"
-          style={{
-            top: "80%",
-            width: "320%",
-            height: "22%",
-            transform: "translateX(-50%) rotate(-8deg)",
-            background: ringGradient,
-            borderRadius: "50%",
-            filter: "blur(0.6px)",
-          }}
-        />
-
         {/* base esfera sólida verde */}
         <div
           className="absolute inset-0 rounded-full"
@@ -361,32 +378,30 @@ function PlanetBackdrop() {
           }}
         />
 
-        {/* Saturn ring DELANTE — la parte del anillo que pasa por delante
-            del planeta visible (cruza el horizonte). */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2"
-          style={{
-            top: "85%",
-            width: "320%",
-            height: "18%",
-            transform: "translateX(-50%) rotate(-8deg)",
-            background: `linear-gradient(to right,
-              transparent 0%,
-              transparent 40%,
-              rgba(220,235,200,0.0) 43%,
-              rgba(245,250,225,0.7) 47%,
-              rgba(190,215,170,0.5) 50%,
-              rgba(245,250,225,0.7) 53%,
-              rgba(220,235,200,0.0) 57%,
-              transparent 60%,
-              transparent 100%
-            )`,
-            borderRadius: "50%",
-            filter: "blur(0.4px)",
-            mixBlendMode: "screen",
-          }}
-        />
       </motion.div>
+
+      {/* Saturn ring DELANTE — la franja que cruza por delante del horizonte
+          visible del planeta (solo el segmento que cubre el planeta). */}
+      <div
+        className="absolute"
+        style={{
+          left: "30vw",
+          right: "30vw",
+          top: "8vw",
+          height: "2vw",
+          background: `linear-gradient(to right,
+            transparent 0%,
+            rgba(245,250,225,0.5) 30%,
+            rgba(190,215,170,0.4) 50%,
+            rgba(245,250,225,0.5) 70%,
+            transparent 100%
+          )`,
+          borderRadius: "50%",
+          filter: "blur(0.4px)",
+          mixBlendMode: "screen",
+          opacity: 0.7,
+        }}
+      />
     </div>
   );
 }
