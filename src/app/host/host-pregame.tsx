@@ -217,9 +217,9 @@ function PlanetBackdrop() {
         transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute left-1/2 -translate-x-1/2"
         style={{
-          top: "-58vw",
-          width: "70vw",
-          height: "70vw",
+          top: "-88vw",
+          width: "100vw",
+          height: "100vw",
         }}
       >
         {/* base esfera sólida verde */}
@@ -297,24 +297,6 @@ function PlanetBackdrop() {
             }}
             animate={{ x: ["0%", "-66.66%"] }}
             transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
-          />
-        </div>
-
-        {/* aurora — destello auroral cyan-verde que recorre el planeta */}
-        <div className="absolute inset-0 overflow-hidden rounded-full">
-          <motion.div
-            className="absolute inset-y-0"
-            style={{
-              left: "-50%",
-              width: "200%",
-              background: `
-                radial-gradient(ellipse 16% 8% at 50% 72%, rgba(140,255,210,0.45) 0%, transparent 75%)
-              `,
-              mixBlendMode: "screen",
-              filter: "blur(2px)",
-            }}
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
           />
         </div>
 
