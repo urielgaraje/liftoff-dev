@@ -629,6 +629,38 @@
 .bigstat-tight { margin: 0; gap: 1rem; }
 .bigstat-tight .stat { font-size: 4.6rem; }
 
+/* ── meme stack intro ────────────────────────── */
+
+.meme-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meme {
+  position: absolute;
+  max-width: 26rem;
+  max-height: 22rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: var(--garaje-white);
+  padding: 0.75rem 0.75rem 1.5rem;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.18),
+    0 18px 40px rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
+  transition: transform 240ms ease-out;
+}
+
+.meme-1 { transform: rotate(-7deg) translate(-6rem, -1.5rem); z-index: 1; }
+.meme-2 { transform: rotate(5deg)  translate(4rem, 1rem);     z-index: 2; }
+.meme-3 { transform: rotate(-3deg) translate(-2rem, 2.5rem);  z-index: 3; }
+.meme-4 { transform: rotate(8deg)  translate(5rem, -3rem);    z-index: 4; }
+.meme-5 { transform: rotate(-2deg) translate(-1rem, 0);       z-index: 5; }
+
 /* ── feature grid (Claude Code slides) ───────── */
 
 .feature-grid {

@@ -14,9 +14,23 @@ fonts:
   sans: 'Inter'
   mono: 'IBM Plex Mono'
   weights: '400,500,700'
+layout: garaje
+chapter: Intro
+page: 1
+---
+
+<div class="meme-stack">
+  <img src="/memes/01-no-vine-a-jugal.png" class="meme meme-1" alt="no vine a jugal" />
+  <img src="/memes/02-how-to-fly.jpg" class="meme meme-2" alt="how to fly" v-click="1" />
+  <img src="/memes/03-verdad-1.jpg" class="meme meme-3" alt="verdad 1" v-click="2" />
+  <img src="/memes/04-verdad-2.jpg" class="meme meme-4" alt="verdad 2" v-click="3" />
+  <img src="/memes/05-modo-serio.jpeg" class="meme meme-5" alt="modo serio" v-click="4" />
+</div>
+
+---
 layout: cover
 chapter: Portada
-page: 1
+page: 2
 dark: true
 ---
 
@@ -34,7 +48,7 @@ Cómo se construye software con IA en 2026.
 ---
 layout: garaje
 chapter: 00 — Intro
-page: 2
+page: 3
 title: El plan
 ---
 
@@ -54,7 +68,7 @@ title: El plan
 ---
 layout: garaje
 chapter: 01 — El prompt
-page: 3
+page: 4
 dark: true
 title: El prompt verbatim
 ---
@@ -77,7 +91,7 @@ title: El prompt verbatim
 ---
 layout: garaje
 chapter: 02 — Live
-page: 4
+page: 5
 dark: true
 title: LIVE — lanzando agente
 ---
@@ -94,7 +108,7 @@ title: LIVE — lanzando agente
 ---
 layout: garaje
 chapter: 03 — Las cuatro capas
-page: 5
+page: 6
 title: Las cuatro capas
 ---
 
@@ -131,7 +145,7 @@ title: Las cuatro capas
 ---
 layout: garaje
 chapter: 04 — Capa 1 · Prompt
-page: 6
+page: 7
 title: Capa 1 — La pregunta
 ---
 
@@ -163,7 +177,7 @@ title: Capa 1 — La pregunta
 ---
 layout: garaje
 chapter: 04 — Capa 1 · Prompt
-page: 7
+page: 8
 dark: true
 title: Capa 1 — El techo
 ---
@@ -198,7 +212,7 @@ title: Capa 1 — El techo
 ---
 layout: garaje
 chapter: 05 — Capa 2 · Context
-page: 8
+page: 9
 title: Capa 2 — El onboarding
 ---
 
@@ -231,7 +245,7 @@ title: Capa 2 — El onboarding
 ---
 layout: garaje
 chapter: 05 — Capa 2 · Context
-page: 9
+page: 10
 dark: true
 title: Capa 2 — Filling the window
 ---
@@ -274,7 +288,7 @@ title: Capa 2 — Filling the window
 ---
 layout: garaje
 chapter: 06 — Capa 3 · Harness
-page: 10
+page: 11
 title: Capa 3 — El puesto de trabajo
 ---
 
@@ -306,7 +320,7 @@ title: Capa 3 — El puesto de trabajo
 ---
 layout: garaje
 chapter: 06 — Capa 3 · Harness
-page: 11
+page: 12
 dark: true
 title: Capa 3 — 1.300 PRs
 ---
@@ -327,7 +341,7 @@ title: Capa 3 — 1.300 PRs
 ---
 layout: garaje
 chapter: 07 — Capa 4 · Agentic
-page: 12
+page: 13
 title: Capa 4 — El tech lead
 ---
 
@@ -362,7 +376,7 @@ title: Capa 4 — El tech lead
 ---
 layout: garaje
 chapter: 07 — Capa 4 · Agentic
-page: 13
+page: 14
 dark: true
 title: Capa 4 — 80% en un mes
 ---
@@ -394,7 +408,7 @@ title: Capa 4 — 80% en un mes
 ---
 layout: garaje
 chapter: 08 — Cita
-page: 14
+page: 15
 dark: true
 title: Cita — Karpathy
 ---
@@ -414,7 +428,7 @@ title: Cita — Karpathy
 ---
 layout: garaje
 chapter: 09 — Volvamos
-page: 15
+page: 16
 dark: true
 title: Volvamos al agente
 ---
