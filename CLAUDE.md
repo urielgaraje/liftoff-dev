@@ -8,8 +8,8 @@
 
 ## Stack
 
-- **Frontend**: Next.js 15 (App Router) · React 19 · TypeScript estricto.
-- **Estilos**: Tailwind CSS · shadcn/ui · Framer Motion (animaciones).
+- **Frontend**: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript estricto.
+- **Estilos**: Tailwind CSS v4 · shadcn/ui · Framer Motion (animaciones).
 - **Realtime**: Pusher Channels (websockets gestionados, soporta 50+ jugadores).
 - **DB**: Neon Postgres + Drizzle ORM.
 - **Tests**: Playwright (E2E multi-browser) · Vitest (unit).
@@ -18,38 +18,37 @@
 
 ## Tokens de diseño (Liftoff space neon)
 
-Definidos en `tailwind.config.ts`:
+Tailwind v4 usa `@theme` en CSS (no hay `tailwind.config.ts`). Definidos en `src/app/globals.css`:
 
-```ts
-colors: {
-  bg: {
-    primary: '#08081E',     // navy profundo (canvas)
-    secondary: '#13132E',   // tiles, cards
-    tertiary: '#1F1F45',    // hover/active surfaces
-  },
-  fg: {
-    primary: '#FFFFFF',
-    secondary: '#9CA3D9',   // lavender muted
-    muted: '#5C6087',
-  },
-  accent: {
-    cyan: '#22D3EE',        // primary CTA, active state
-    magenta: '#EC4899',     // alerts, cursor, errors
-    yellow: '#FACC15',      // highlights, achievements
-    green: '#34D399',       // success
-  },
-  rocket: {
-    cyan: '#22D3EE',
-    magenta: '#EC4899',
-    yellow: '#FACC15',
-    orange: '#FB923C',
-    green: '#34D399',
-    purple: '#A78BFA',
-    red: '#F87171',
-    blue: '#60A5FA',
-  },
+```css
+@theme {
+  --color-bg-primary: #08081E;     /* navy profundo (canvas) */
+  --color-bg-secondary: #13132E;   /* tiles, cards */
+  --color-bg-tertiary: #1F1F45;    /* hover/active surfaces */
+
+  --color-fg-primary: #FFFFFF;
+  --color-fg-secondary: #9CA3D9;   /* lavender muted */
+  --color-fg-muted: #5C6087;
+
+  --color-accent-cyan: #22D3EE;    /* primary CTA, active state */
+  --color-accent-magenta: #EC4899; /* alerts, cursor, errors */
+  --color-accent-yellow: #FACC15;  /* highlights, achievements */
+  --color-accent-green: #34D399;   /* success */
+
+  --color-rocket-cyan: #22D3EE;
+  --color-rocket-magenta: #EC4899;
+  --color-rocket-yellow: #FACC15;
+  --color-rocket-orange: #FB923C;
+  --color-rocket-green: #34D399;
+  --color-rocket-purple: #A78BFA;
+  --color-rocket-red: #F87171;
+  --color-rocket-blue: #60A5FA;
 }
 ```
+
+Uso en clases Tailwind: `bg-bg-primary`, `text-fg-secondary`, `text-accent-cyan`, `text-rocket-magenta`, etc.
+
+Los tokens shadcn (`--color-background`, `--color-primary`, etc.) están mapeados a esta paleta en el bloque `@theme inline` adyacente.
 
 Tipografía:
 - **Inter** — body, headlines.

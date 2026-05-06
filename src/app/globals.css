@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-bg-primary: #08081E;
+  --color-bg-secondary: #13132E;
+  --color-bg-tertiary: #1F1F45;
+
+  --color-fg-primary: #FFFFFF;
+  --color-fg-secondary: #9CA3D9;
+  --color-fg-muted: #5C6087;
+
+  --color-accent-cyan: #22D3EE;
+  --color-accent-magenta: #EC4899;
+  --color-accent-yellow: #FACC15;
+  --color-accent-green: #34D399;
+
+  --color-rocket-cyan: #22D3EE;
+  --color-rocket-magenta: #EC4899;
+  --color-rocket-yellow: #FACC15;
+  --color-rocket-orange: #FB923C;
+  --color-rocket-green: #34D399;
+  --color-rocket-purple: #A78BFA;
+  --color-rocket-red: #F87171;
+  --color-rocket-blue: #60A5FA;
+
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-background: var(--color-bg-primary);
+  --color-foreground: var(--color-fg-primary);
+  --color-card: var(--color-bg-secondary);
+  --color-card-foreground: var(--color-fg-primary);
+  --color-popover: var(--color-bg-secondary);
+  --color-popover-foreground: var(--color-fg-primary);
+  --color-primary: var(--color-accent-cyan);
+  --color-primary-foreground: var(--color-bg-primary);
+  --color-secondary: var(--color-bg-tertiary);
+  --color-secondary-foreground: var(--color-fg-primary);
+  --color-muted: var(--color-bg-tertiary);
+  --color-muted-foreground: var(--color-fg-muted);
+  --color-accent: var(--color-accent-magenta);
+  --color-accent-foreground: var(--color-fg-primary);
+  --color-destructive: var(--color-accent-magenta);
+  --color-border: var(--color-bg-tertiary);
+  --color-input: var(--color-bg-tertiary);
+  --color-ring: var(--color-accent-cyan);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+@layer base {
+  body {
+    background: var(--color-bg-primary);
+    color: var(--color-fg-primary);
+    font-family: var(--font-sans);
+  }
+}
