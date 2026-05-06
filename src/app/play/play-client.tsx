@@ -220,17 +220,24 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
     );
   }
 
-  return <LobbyView code={code} room={room} />;
+  return <LobbyView code={code} room={room} selfPlayer={selfPlayer} />;
 }
 
 function LobbyView({
   code,
   room,
+  selfPlayer,
 }: {
   code: string;
   room: ReturnType<typeof useRoomChannel>;
+  selfPlayer: SelfPlayer | null;
 }) {
   const ready = room.players.length;
+  const others = selfPlayer
+    ? room.players.filter((p) => p.id !== selfPlayer.id)
+    : room.players;
+  const visibleOthers = others.slice(0, 8);
+  const hiddenCount = others.length - visibleOthers.length;
 
   return (
     <main className="flex min-h-screen flex-col" data-testid="lobby">
@@ -250,26 +257,84 @@ function LobbyView({
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-        <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-1 flex-col items-center justify-between gap-8 px-8 pt-4 pb-12">
+        <div className="flex flex-col items-center gap-3 pt-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="relative size-32 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(34,211,238,0.25) 0%, rgba(34,211,238,0.08) 50%, transparent 75%)",
+              boxShadow: "0 0 60px rgba(34,211,238,0.3)",
+            }}
+            aria-hidden
+          >
+            <motion.div
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-2 rounded-full bg-accent-cyan/40 blur-md"
+            />
+          </motion.div>
           <motion.p
-            animate={{ opacity: [0.6, 1, 0.6] }}
+            animate={{ opacity: [0.5, 0.9, 0.5] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             className="font-mono text-[10px] tracking-[0.4em] text-fg-muted"
           >
             DESTINO
           </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-4xl font-medium tracking-tight text-fg-primary"
-            style={{
-              textShadow: "0 0 30px rgba(34,211,238,0.25)",
-            }}
-          >
-            Planeta Liftoff
-          </motion.h1>
+        </div>
+
+        <div className="flex flex-col items-center gap-6">
+          {selfPlayer && (
+            <div className="relative flex flex-col items-center gap-4">
+              <motion.div
+                aria-hidden
+                animate={{ scale: [1, 1.08, 1], opacity: [0.5, 0.85, 0.5] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-[-28px] rounded-full"
+                style={{
+                  border: `1.5px solid var(--color-rocket-${selfPlayer.rocketSkin})`,
+                  boxShadow: `0 0 40px var(--color-rocket-${selfPlayer.rocketSkin})`,
+                  opacity: 0.55,
+                }}
+              />
+              <motion.div
+                aria-hidden
+                animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0, 0.3] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-[-44px] rounded-full"
+                style={{
+                  border: `1px solid var(--color-rocket-${selfPlayer.rocketSkin})`,
+                }}
+              />
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative flex size-28 items-center justify-center"
+                style={{
+                  filter: `drop-shadow(0 0 24px var(--color-rocket-${selfPlayer.rocketSkin}))`,
+                }}
+              >
+                <Rocket
+                  skin={selfPlayer.rocketSkin}
+                  size={88}
+                  animate
+                  intensity={1.1}
+                />
+              </motion.div>
+              <p
+                className={cn(
+                  "text-3xl font-medium",
+                  SKIN_TEXT_CLASS[selfPlayer.rocketSkin],
+                )}
+              >
+                {selfPlayer.nickname}
+              </p>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <motion.span
               aria-hidden
@@ -288,15 +353,15 @@ function LobbyView({
           </div>
         </div>
 
-        <div className="w-full max-w-4xl">
-          <p className="mb-3 font-mono text-xs tracking-wider text-fg-muted">
+        <div className="flex w-full max-w-3xl flex-col items-center gap-3">
+          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
             COHETES EN PISTA · {ready}/50
           </p>
           <ul
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+            className="flex flex-wrap items-center justify-center gap-4"
             data-testid="player-list"
           >
-            {room.players.map((p, i) => (
+            {visibleOthers.map((p, i) => (
               <motion.li
                 key={p.id}
                 data-testid={`player-${p.nickname}`}
@@ -304,20 +369,23 @@ function LobbyView({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut", delay: i * 0.04 }}
                 whileHover={{ y: -3, transition: { duration: 0.18 } }}
-                className="flex items-center gap-3 rounded-xl bg-bg-secondary p-3 ring-1 ring-bg-tertiary transition-shadow hover:shadow-[0_0_24px_rgba(34,211,238,0.18)]"
+                className="flex flex-col items-center gap-1"
               >
                 <span
-                  className={cn(
-                    "flex size-9 items-center justify-center rounded-lg",
-                    SKIN_BG_CLASS[p.rocketSkin as RocketSkin],
-                    "bg-opacity-20",
-                  )}
+                  style={{
+                    filter: `drop-shadow(0 0 8px var(--color-rocket-${p.rocketSkin}))`,
+                  }}
                 >
-                  <Rocket skin={p.rocketSkin as RocketSkin} size={22} animate />
+                  <Rocket
+                    skin={p.rocketSkin as RocketSkin}
+                    size={28}
+                    animate
+                    intensity={0.7}
+                  />
                 </span>
                 <span
                   className={cn(
-                    "truncate text-sm font-medium",
+                    "max-w-[5rem] truncate font-mono text-[10px]",
                     SKIN_TEXT_CLASS[p.rocketSkin as RocketSkin],
                   )}
                 >
@@ -325,10 +393,25 @@ function LobbyView({
                 </span>
               </motion.li>
             ))}
+            {hiddenCount > 0 && (
+              <li className="flex flex-col items-center gap-1">
+                <span className="flex size-7 items-center justify-center rounded-full bg-bg-secondary/70 ring-1 ring-bg-tertiary">
+                  <span className="font-mono text-[10px] text-fg-secondary">
+                    +{hiddenCount}
+                  </span>
+                </span>
+                <span className="font-mono text-[10px] text-fg-muted">
+                  más
+                </span>
+              </li>
+            )}
+            {visibleOthers.length === 0 && hiddenCount === 0 && (
+              <li className="font-mono text-xs text-fg-muted">
+                aún nadie más en pista
+              </li>
+            )}
           </ul>
         </div>
-
-        <p className="font-mono text-xs text-fg-muted">esperando al host</p>
       </div>
     </main>
   );
