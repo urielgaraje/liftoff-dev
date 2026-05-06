@@ -22,7 +22,6 @@ title: Memes intro
 ---
 
 <div class="slide-body slide-welcome">
-  <p class="eyebrow">Garaje · Formaciones de IA</p>
   <h2 class="lead">
     Bienvenido a<br/>
     <span class="accent-pink">formaciones de IA</span>.
