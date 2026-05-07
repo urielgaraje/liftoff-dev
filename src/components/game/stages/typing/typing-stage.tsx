@@ -66,15 +66,21 @@ export function TypingStage({
     [code, stageIndex],
   );
 
-  const finishStage = useCallback(() => {
+  const finishStage = useCallback(async () => {
     if (endedRef.current) return;
-    endedRef.current = true;
     sendProgress(true);
-    void fetch(`/api/room/${code}/end-stage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stageIndex }),
-    }).catch(() => {});
+    try {
+      const res = await fetch(`/api/room/${code}/end-stage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stageIndex }),
+      });
+      if (res.ok || res.status === 404) {
+        endedRef.current = true;
+      }
+    } catch {
+      // network error — interval will retry
+    }
   }, [code, stageIndex, sendProgress]);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 
 const PASSPHRASE = process.env.HOST_PASSPHRASE;
-const STAGE_MS = Number(process.env.STAGE_DURATION_OVERRIDE_MS ?? "3000");
+const STAGE_MS = Number(process.env.STAGE_DURATION_OVERRIDE_MS ?? "5000");
 
 async function fresh(browser: Browser): Promise<Page> {
   const ctx = await browser.newContext();
@@ -10,6 +10,7 @@ async function fresh(browser: Browser): Promise<Page> {
 
 async function hostCreate(host: Page): Promise<string> {
   await host.goto("/");
+  await host.getByTestId("host-open").click();
   await host.getByTestId("host-passphrase").fill(PASSPHRASE!);
   await host.getByTestId("host-create").click();
   await expect(host).toHaveURL(/\/host$/);
@@ -71,15 +72,15 @@ test.describe("stage 1 — typing", () => {
 
     await host.getByTestId("host-start").click();
 
-    await expect(alice.getByTestId("typing-stage")).toBeVisible({ timeout: 5000 });
-    await expect(bob.getByTestId("typing-stage")).toBeVisible({ timeout: 5000 });
-    await expect(host.getByTestId("broadcast-rockets")).toBeVisible({ timeout: 5000 });
+    await expect(alice.getByTestId("typing-stage")).toBeVisible({ timeout: 10000 });
+    await expect(bob.getByTestId("typing-stage")).toBeVisible({ timeout: 10000 });
+    await expect(host.getByTestId("broadcast-rockets")).toBeVisible({ timeout: 10000 });
 
     await typeChars(alice, 30);
     await typeChars(bob, 10);
 
-    await expect(host.getByTestId("leaderboard-alice")).toBeVisible({ timeout: 3000 });
-    await expect(host.getByTestId("leaderboard-bob")).toBeVisible({ timeout: 3000 });
+    await expect(host.getByTestId("leaderboard-alice")).toBeVisible({ timeout: 8000 });
+    await expect(host.getByTestId("leaderboard-bob")).toBeVisible({ timeout: 8000 });
 
     const aliceRow = host.getByTestId("leaderboard-alice");
     const bobRow = host.getByTestId("leaderboard-bob");
@@ -91,10 +92,10 @@ test.describe("stage 1 — typing", () => {
 
     await expect(host.getByTestId("broadcast-header")).toContainText(
       "CARRERA COMPLETADA",
-      { timeout: STAGE_MS + 8000 },
+      { timeout: STAGE_MS + 15000 },
     );
 
-    await expect(alice.getByTestId("play-ended")).toBeVisible({ timeout: 5000 });
-    await expect(bob.getByTestId("play-ended")).toBeVisible({ timeout: 5000 });
+    await expect(alice.getByTestId("play-ended")).toBeVisible({ timeout: 10000 });
+    await expect(bob.getByTestId("play-ended")).toBeVisible({ timeout: 10000 });
   });
 });

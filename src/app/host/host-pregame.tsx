@@ -33,7 +33,9 @@ export function HostPreGame({ code, playUrl, room }: Props) {
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setStartError(body.error ?? "no se pudo iniciar");
+        return;
       }
+      room.refresh();
     } catch {
       setStartError("error de red");
     } finally {

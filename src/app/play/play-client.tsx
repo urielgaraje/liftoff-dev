@@ -195,14 +195,6 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
     return idx >= 0 ? idx + 1 : null;
   }, [playerId, room.players, room.progress]);
 
-  if (room.loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="font-mono text-xs text-fg-muted">cargando…</p>
-      </main>
-    );
-  }
-
   if (room.status === "racing" && room.stage) {
     return (
       <StageRenderer

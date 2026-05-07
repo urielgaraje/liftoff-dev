@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   EVENT,
   type LeaderboardEntry,
@@ -54,8 +54,26 @@ type Snapshot = {
   progress: Record<string, number>;
 };
 
-export function useRoomChannel(code: string | null): RoomState {
+const POLL_MS = 5000;
+
+const STATUS_ORDER: Record<RoomState["status"], number> = {
+  lobby: 0,
+  racing: 1,
+  ended: 2,
+};
+
+function maxStatus(
+  a: RoomState["status"],
+  b: RoomState["status"],
+): RoomState["status"] {
+  return STATUS_ORDER[a] >= STATUS_ORDER[b] ? a : b;
+}
+
+export type RoomChannel = RoomState & { refresh: () => void };
+
+export function useRoomChannel(code: string | null): RoomChannel {
   const [state, setState] = useState<RoomState>(INITIAL);
+  const refreshRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!code) {
@@ -80,11 +98,14 @@ export function useRoomChannel(code: string | null): RoomState {
           for (const [k, v] of Object.entries(prev.progress)) {
             if ((mergedProgress[k] ?? 0) < v) mergedProgress[k] = v;
           }
+          const status = maxStatus(prev.status, data.status);
+          const stage =
+            status === "ended" ? null : prev.stage ?? data.stage;
           return {
             ...prev,
-            status: data.status,
+            status,
             players: Array.from(byId.values()),
-            stage: prev.stage ?? data.stage,
+            stage,
             progress: mergedProgress,
             loading: false,
             error: null,
@@ -100,10 +121,15 @@ export function useRoomChannel(code: string | null): RoomState {
       }
     };
 
+    refreshRef.current = fetchSnapshot;
+
     const pusher = getPusherClient();
     const channel = pusher.subscribe(`room-${code}`);
 
-    fetchSnapshot();
+    channel.bind("pusher:subscription_succeeded", () => {
+      if (cancelled) return;
+      fetchSnapshot();
+    });
 
     channel.bind(EVENT.PlayerJoined, (payload: PlayerJoinedPayload) => {
       setState((prev) => {
@@ -172,12 +198,21 @@ export function useRoomChannel(code: string | null): RoomState {
       });
     });
 
+    const pollId = window.setInterval(() => {
+      if (cancelled) return;
+      fetchSnapshot();
+    }, POLL_MS);
+
     return () => {
       cancelled = true;
+      window.clearInterval(pollId);
       channel.unbind_all();
       pusher.unsubscribe(`room-${code}`);
+      refreshRef.current = () => {};
     };
   }, [code]);
 
-  return state;
+  const refresh = useCallback(() => refreshRef.current(), []);
+
+  return useMemo(() => ({ ...state, refresh }), [state, refresh]);
 }
