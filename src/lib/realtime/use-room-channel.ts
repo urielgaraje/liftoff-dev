@@ -49,12 +49,18 @@ const INITIAL: RoomState = {
   error: null,
 };
 
+type SnapshotLastEnded = {
+  stageIndex: number;
+  leaderboard: LeaderboardEntry[];
+};
+
 type Snapshot = {
   status: RoomState["status"];
   maxPlayers?: number;
   players: PlayerSnapshot[];
   stage: StageInfo | null;
   progress: Record<string, number>;
+  lastEnded?: SnapshotLastEnded | null;
 };
 
 const POLL_MS = 5000;
@@ -112,6 +118,19 @@ export function useRoomChannel(
           const status = maxStatus(prev.status, data.status);
           const stage =
             status === "ended" ? null : prev.stage ?? data.stage;
+          let lastEnded = prev.lastEnded;
+          if (data.lastEnded) {
+            if (
+              !lastEnded ||
+              lastEnded.stageIndex < data.lastEnded.stageIndex
+            ) {
+              lastEnded = {
+                stageIndex: data.lastEnded.stageIndex,
+                leaderboard: data.lastEnded.leaderboard,
+                endedAt: lastEnded?.endedAt ?? Date.now(),
+              };
+            }
+          }
           return {
             ...prev,
             status,
@@ -119,6 +138,7 @@ export function useRoomChannel(
             players: Array.from(byId.values()),
             stage,
             progress: mergedProgress,
+            lastEnded,
             loading: false,
             error: null,
           };

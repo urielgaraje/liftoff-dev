@@ -165,7 +165,7 @@ export function PlayClient({ code, alreadyJoined, playerId }: Props) {
 }
 
 function JoinedView({ code, playerId }: { code: string; playerId: string | null }) {
-  const room = useRoomChannel(code);
+  const room = useRoomChannel(code, { withProgress: true });
 
   useEffect(() => {
     const onHide = () => {
@@ -212,6 +212,8 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
           durationMs={room.stage.durationMs}
           init={room.stage.init}
           selfPlayer={selfPlayer}
+          players={room.players}
+          progress={room.progress}
         />
       </>
     );

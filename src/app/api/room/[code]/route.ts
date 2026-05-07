@@ -1,10 +1,12 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { players, rooms } from "@/lib/db/schema";
+import { players, rooms, scores } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
 import { getAllForStage } from "@/lib/game/progress-store";
+import type { LeaderboardEntry } from "@/lib/realtime/events";
+import type { RocketSkin } from "@/lib/game/skins";
 
 export const runtime = "nodejs";
 
@@ -56,6 +58,43 @@ export async function GET(
     }
   }
 
+  let lastEnded: { stageIndex: number; leaderboard: LeaderboardEntry[] } | null =
+    null;
+  if (room.status === "ended") {
+    const [maxRow] = await db
+      .select({ stageIndex: sql<number>`MAX(${scores.stageIndex})` })
+      .from(scores)
+      .where(eq(scores.roomId, room.id));
+    const lastStageIndex = maxRow?.stageIndex ?? null;
+    if (lastStageIndex !== null) {
+      const rows = await db
+        .select({
+          playerId: scores.playerId,
+          value: scores.value,
+          nickname: players.nickname,
+          rocketSkin: players.rocketSkin,
+        })
+        .from(scores)
+        .innerJoin(players, eq(players.id, scores.playerId))
+        .where(
+          and(
+            eq(scores.roomId, room.id),
+            eq(scores.stageIndex, lastStageIndex),
+          ),
+        )
+        .orderBy(desc(scores.value), asc(scores.completedAt));
+      lastEnded = {
+        stageIndex: lastStageIndex,
+        leaderboard: rows.map((r) => ({
+          playerId: r.playerId,
+          nickname: r.nickname,
+          rocketSkin: r.rocketSkin as RocketSkin,
+          value: r.value,
+        })),
+      };
+    }
+  }
+
   return NextResponse.json({
     code: room.code,
     status: room.status,
@@ -69,5 +108,6 @@ export async function GET(
     })),
     stage,
     progress,
+    lastEnded,
   });
 }

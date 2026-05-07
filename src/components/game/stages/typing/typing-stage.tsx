@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { TypingParagraph } from "./typing-paragraph";
+import { PlayerRanking } from "@/components/game/player-ranking";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SelfPlayer } from "@/app/play/play-client";
+import type { PlayerSnapshot } from "@/lib/realtime/events";
 
 const PROGRESS_INTERVAL_MS = 1000;
 const ERROR_FLASH_MS = 150;
@@ -23,6 +25,8 @@ type Props = {
   durationMs: number;
   init: { paragraph: string };
   selfPlayer: SelfPlayer | null;
+  players: PlayerSnapshot[];
+  progress: Record<string, number>;
 };
 
 export function TypingStage({
@@ -31,6 +35,9 @@ export function TypingStage({
   startedAt,
   durationMs,
   init,
+  selfPlayer,
+  players,
+  progress,
 }: Props) {
   const paragraph = init.paragraph;
   const startMs = new Date(startedAt).getTime();
@@ -136,6 +143,11 @@ export function TypingStage({
 
   return (
     <main className="flex min-h-screen flex-col">
+      <PlayerRanking
+        players={players}
+        progress={progress}
+        selfPlayerId={selfPlayer?.id ?? null}
+      />
       <header className="grid grid-cols-[1fr_auto_1fr] items-start gap-6 px-10 py-8">
         <div />
         <div className="flex flex-col items-center gap-2">

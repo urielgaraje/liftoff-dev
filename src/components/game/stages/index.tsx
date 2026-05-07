@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import { TypingStage } from "./typing/typing-stage";
 import { UnknownStage } from "@/components/game/unknown-stage";
 import type { SelfPlayer } from "@/app/play/play-client";
+import type { PlayerSnapshot } from "@/lib/realtime/events";
 
 export type StageRendererProps = {
   code: string;
@@ -12,6 +13,8 @@ export type StageRendererProps = {
   durationMs: number;
   init: unknown;
   selfPlayer: SelfPlayer | null;
+  players: PlayerSnapshot[];
+  progress: Record<string, number>;
 };
 
 const RENDERERS: Record<string, ComponentType<StageRendererProps>> = {
