@@ -5,7 +5,13 @@ import { db } from "@/lib/db";
 import { players, rooms, scores } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
-import { clearRoom, clearStage, getAllForStage } from "@/lib/game/progress-store";
+import {
+  activateStage,
+  clearRoom,
+  clearStage,
+  deactivateStage,
+  getAllForStage,
+} from "@/lib/game/progress-store";
 import { broadcast } from "@/lib/realtime/server";
 import { EVENT, type LeaderboardEntry } from "@/lib/realtime/events";
 import type { RocketSkin } from "@/lib/game/skins";
@@ -75,6 +81,9 @@ export async function POST(
   }
 
   const fromStageIndex = room.currentStageIndex;
+  // freeze the stage BEFORE the snapshot so any in-flight /progress is dropped
+  // (otherwise the host could see a Pusher value that never made it to DB)
+  deactivateStage(code, fromStageIndex);
   const inMemory = getAllForStage(code, fromStageIndex);
   if (inMemory.size > 0) {
     const completedAt = advanced.nextStartedAt ?? new Date();
@@ -129,6 +138,7 @@ export async function POST(
   });
 
   if (next) {
+    activateStage(code, fromStageIndex + 1);
     await broadcast(code, EVENT.StageStarted, {
       stageIndex: fromStageIndex + 1,
       stageId: next.id,

@@ -89,7 +89,12 @@ export async function POST(
     return NextResponse.json({ error: "invalid progress" }, { status: 422 });
   }
 
-  setValue(code, room.currentStageIndex, playerId, next);
+  const accepted = setValue(code, room.currentStageIndex, playerId, next);
+  if (!accepted) {
+    // stage was deactivated by /end-stage between our room read and now;
+    // drop silently so host UI never sees a value that won't be in DB
+    return NextResponse.json({ error: "stage closed" }, { status: 409 });
+  }
 
   try {
     await broadcastProgress(code, EVENT.ProgressUpdated, {

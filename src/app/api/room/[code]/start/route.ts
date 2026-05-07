@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { rooms } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
+import { activateStage } from "@/lib/game/progress-store";
 import { broadcast } from "@/lib/realtime/server";
 import { EVENT } from "@/lib/realtime/events";
 
@@ -54,6 +55,8 @@ export async function POST(
       stageInit: init as object,
     })
     .where(eq(rooms.id, room.id));
+
+  activateStage(code, 0);
 
   await broadcast(code, EVENT.StageStarted, {
     stageIndex: 0,

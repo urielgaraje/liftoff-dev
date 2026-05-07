@@ -113,7 +113,7 @@ export function HostBroadcast({ room }: Props) {
             </motion.div>
           )}
           <div
-            className="relative grid w-full max-w-3xl grid-cols-4 gap-6"
+            className="relative grid w-full max-w-5xl grid-cols-8 gap-4"
             data-testid="broadcast-rockets"
           >
             {top8.map((p, idx) => {
