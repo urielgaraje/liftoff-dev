@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
@@ -45,7 +45,6 @@ function EyebrowPill({ children }: { children: ReactNode }) {
 
 export default function LandingPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [code, setCode] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
@@ -76,12 +75,13 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    if (searchParams.get("restart") === "1") {
-      // open dialog when arriving via /?restart=1 from the host podium
+    // open dialog when arriving via /?restart=1 from the host podium
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("restart") === "1") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setHostOpen(true);
     }
-  }, [searchParams]);
+  }, []);
 
   const onJoin = (e: FormEvent) => {
     e.preventDefault();
