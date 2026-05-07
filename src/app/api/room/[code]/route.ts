@@ -1,9 +1,10 @@
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { players, rooms, scores } from "@/lib/db/schema";
+import { players, rooms } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
+import { getAllForStage } from "@/lib/game/progress-store";
 
 export const runtime = "nodejs";
 
@@ -49,16 +50,9 @@ export async function GET(
         init: room.stageInit,
         startedAt: room.stageStartedAt.toISOString(),
       };
-      const rows = await db
-        .select({ playerId: scores.playerId, value: scores.value })
-        .from(scores)
-        .where(
-          and(
-            eq(scores.roomId, room.id),
-            eq(scores.stageIndex, room.currentStageIndex),
-          ),
-        );
-      progress = Object.fromEntries(rows.map((r) => [r.playerId, r.value]));
+      progress = Object.fromEntries(
+        getAllForStage(code, room.currentStageIndex).entries(),
+      );
     }
   }
 

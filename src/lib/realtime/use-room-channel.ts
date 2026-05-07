@@ -71,7 +71,15 @@ function maxStatus(
 
 export type RoomChannel = RoomState & { refresh: () => void };
 
-export function useRoomChannel(code: string | null): RoomChannel {
+export type UseRoomChannelOptions = {
+  withProgress?: boolean;
+};
+
+export function useRoomChannel(
+  code: string | null,
+  opts: UseRoomChannelOptions = {},
+): RoomChannel {
+  const { withProgress = false } = opts;
   const [state, setState] = useState<RoomState>(INITIAL);
   const refreshRef = useRef<() => void>(() => {});
 
@@ -171,16 +179,22 @@ export function useRoomChannel(code: string | null): RoomChannel {
       }));
     });
 
-    channel.bind(EVENT.ProgressUpdated, (payload: ProgressUpdatedPayload) => {
-      setState((prev) => {
-        if (!prev.stage || prev.stage.stageIndex !== payload.stageIndex) return prev;
-        if ((prev.progress[payload.playerId] ?? 0) >= payload.value) return prev;
-        return {
-          ...prev,
-          progress: { ...prev.progress, [payload.playerId]: payload.value },
-        };
-      });
-    });
+    const progressChannel = withProgress
+      ? pusher.subscribe(`room-${code}-progress`)
+      : null;
+    progressChannel?.bind(
+      EVENT.ProgressUpdated,
+      (payload: ProgressUpdatedPayload) => {
+        setState((prev) => {
+          if (!prev.stage || prev.stage.stageIndex !== payload.stageIndex) return prev;
+          if ((prev.progress[payload.playerId] ?? 0) >= payload.value) return prev;
+          return {
+            ...prev,
+            progress: { ...prev.progress, [payload.playerId]: payload.value },
+          };
+        });
+      },
+    );
 
     channel.bind(EVENT.StageEnded, (payload: StageEndedPayload) => {
       setState((prev) => {
@@ -208,9 +222,13 @@ export function useRoomChannel(code: string | null): RoomChannel {
       window.clearInterval(pollId);
       channel.unbind_all();
       pusher.unsubscribe(`room-${code}`);
+      if (progressChannel) {
+        progressChannel.unbind_all();
+        pusher.unsubscribe(`room-${code}-progress`);
+      }
       refreshRef.current = () => {};
     };
-  }, [code]);
+  }, [code, withProgress]);
 
   const refresh = useCallback(() => refreshRef.current(), []);
 

@@ -22,10 +22,22 @@ export function roomChannel(code: string): string {
   return `room-${code}`;
 }
 
+export function roomProgressChannel(code: string): string {
+  return `room-${code}-progress`;
+}
+
 export async function broadcast(
   code: string,
   event: string,
   payload: unknown,
 ): Promise<void> {
   await pusherServer.trigger(roomChannel(code), event, payload);
+}
+
+export async function broadcastProgress(
+  code: string,
+  event: string,
+  payload: unknown,
+): Promise<void> {
+  await pusherServer.trigger(roomProgressChannel(code), event, payload);
 }

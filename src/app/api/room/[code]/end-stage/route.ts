@@ -1,10 +1,11 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { players, rooms, scores } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
+import { clearRoom, clearStage, getAllForStage } from "@/lib/game/progress-store";
 import { broadcast } from "@/lib/realtime/server";
 import { EVENT, type LeaderboardEntry } from "@/lib/realtime/events";
 import type { RocketSkin } from "@/lib/game/skins";
@@ -73,6 +74,30 @@ export async function POST(
     return NextResponse.json({ error: "race conflict" }, { status: 409 });
   }
 
+  const fromStageIndex = room.currentStageIndex;
+  const inMemory = getAllForStage(code, fromStageIndex);
+  if (inMemory.size > 0) {
+    const completedAt = advanced.nextStartedAt ?? new Date();
+    const rows = Array.from(inMemory.entries()).map(([playerId, value]) => ({
+      roomId: room.id,
+      playerId,
+      stageIndex: fromStageIndex,
+      value,
+      completedAt,
+    }));
+    await db
+      .insert(scores)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: [scores.playerId, scores.stageIndex],
+        set: {
+          value: sql`GREATEST(${scores.value}, EXCLUDED.value)`,
+          completedAt: sql`EXCLUDED.completed_at`,
+        },
+      });
+  }
+  clearStage(code, fromStageIndex);
+
   const leaderboardRows = await db
     .select({
       playerId: scores.playerId,
@@ -85,7 +110,7 @@ export async function POST(
     .where(
       and(
         eq(scores.roomId, room.id),
-        eq(scores.stageIndex, room.currentStageIndex),
+        eq(scores.stageIndex, fromStageIndex),
       ),
     )
     .orderBy(desc(scores.value), asc(scores.completedAt));
@@ -98,26 +123,27 @@ export async function POST(
   }));
 
   await broadcast(code, EVENT.StageEnded, {
-    stageIndex: room.currentStageIndex,
+    stageIndex: fromStageIndex,
     leaderboard,
-    nextStageIndex: next ? room.currentStageIndex + 1 : null,
+    nextStageIndex: next ? fromStageIndex + 1 : null,
   });
 
   if (next) {
     await broadcast(code, EVENT.StageStarted, {
-      stageIndex: room.currentStageIndex + 1,
+      stageIndex: fromStageIndex + 1,
       stageId: next.id,
       durationMs: next.durationMs,
       init: advanced.nextInit,
       startedAt: advanced.nextStartedAt!.toISOString(),
     });
   } else {
+    clearRoom(code);
     await broadcast(code, EVENT.RoomUpdated, { status: "ended" });
   }
 
   return NextResponse.json({
     ok: true,
-    nextStageIndex: next ? room.currentStageIndex + 1 : null,
+    nextStageIndex: next ? fromStageIndex + 1 : null,
   });
 }
 
@@ -127,12 +153,6 @@ async function advanceRoom(args: {
   next: ReturnType<typeof getStage>;
 }): Promise<{ nextInit: unknown; nextStartedAt: Date | null } | null> {
   const now = new Date();
-  await db
-    .update(scores)
-    .set({ completedAt: now })
-    .where(
-      and(eq(scores.roomId, args.roomId), eq(scores.stageIndex, args.fromStageIndex)),
-    );
 
   if (args.next) {
     const nextInit = args.next.buildInit();

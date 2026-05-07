@@ -1,12 +1,13 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getPlayerId } from "@/lib/auth/player";
 import { db } from "@/lib/db";
-import { players, rooms, scores } from "@/lib/db/schema";
+import { players, rooms } from "@/lib/db/schema";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
 import { getStage } from "@/lib/game/stages";
-import { broadcast } from "@/lib/realtime/server";
+import { getValue, setValue } from "@/lib/game/progress-store";
+import { broadcastProgress } from "@/lib/realtime/server";
 import { EVENT } from "@/lib/realtime/events";
 
 export const runtime = "nodejs";
@@ -75,18 +76,7 @@ export async function POST(
     return NextResponse.json({ error: "player not in room" }, { status: 403 });
   }
 
-  const [existing] = await db
-    .select({ value: scores.value })
-    .from(scores)
-    .where(
-      and(
-        eq(scores.playerId, playerId),
-        eq(scores.stageIndex, room.currentStageIndex),
-      ),
-    )
-    .limit(1);
-
-  const prev = existing?.value ?? 0;
+  const prev = getValue(code, room.currentStageIndex, playerId);
   const next = parsed.data.value;
 
   if (
@@ -99,24 +89,17 @@ export async function POST(
     return NextResponse.json({ error: "invalid progress" }, { status: 422 });
   }
 
-  await db
-    .insert(scores)
-    .values({
-      roomId: room.id,
+  setValue(code, room.currentStageIndex, playerId, next);
+
+  try {
+    await broadcastProgress(code, EVENT.ProgressUpdated, {
       playerId,
       stageIndex: room.currentStageIndex,
       value: next,
-    })
-    .onConflictDoUpdate({
-      target: [scores.playerId, scores.stageIndex],
-      set: { value: sql`GREATEST(${scores.value}, ${next})` },
     });
-
-  await broadcast(code, EVENT.ProgressUpdated, {
-    playerId,
-    stageIndex: room.currentStageIndex,
-    value: next,
-  });
+  } catch (err) {
+    console.error("[progress] broadcast failed (state still saved):", err);
+  }
 
   return NextResponse.json({ ok: true, value: next });
 }

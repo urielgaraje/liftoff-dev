@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SelfPlayer } from "@/app/play/play-client";
 
-const PROGRESS_INTERVAL_MS = 500;
+const PROGRESS_INTERVAL_MS = 1000;
 const ERROR_FLASH_MS = 150;
 
 const STAGE_TABS: ReadonlyArray<{ index: number; label: string }> = [
