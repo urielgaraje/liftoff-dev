@@ -5,6 +5,63 @@
 
 ---
 
+## Estado: `polish-podium-music-v1` (post-`scale-50p-v1`)
+
+Sesión de pulido pre-demo enfocada en **carga sensorial (música) + flujo de partida (cerrar/reiniciar) + parametrización en runtime (duración stage + max jugadores)**. Sin tocar el motor del juego ni la arquitectura de stages.
+
+### 1. Música ambiente + mute
+
+- 4 pistas en `public/music/`: `lobby.mp3` (suena en todos los lobbies, host y player) + 3 pistas de stage random (`last_sector_run_2`, `lunar_base_jump_1`, `vector_decendent_3`). Cuando el `room.status` pasa a `racing` se elige una al azar; al cambiar `stage.stageIndex` se vuelve a sortear. En `ended` (podio) → silencio.
+- Componente `src/components/shared/background-music.tsx`: un único `<audio loop>` controlado por refs + botón mute fijo `bottom-4 right-4` (`Volume2`/`VolumeX` de lucide). Mute persiste en `localStorage["liftoff:music:muted"]`.
+- Autoplay-resilient: si `play()` rechaza por la política del navegador, registra listener one-shot `pointerdown`/`keydown` en `document` y reintenta. El primer click del host/jugador desbloquea audio.
+- Volumen: 0.4 lobby / 0.35 stage. Cambiar mute no detiene la pista, solo silencia (`audio.muted`).
+- Mount points (uno vivo por pestaña):
+  - `host-router.tsx`: deriva `phase` de `room.status`, pasa `stageIndex`.
+  - `play-client.tsx`: en pre-join `phase="lobby"` fijo; en `JoinedView` deriva igual que el host.
+
+### 2. Botones del podio + flujo de cerrar/reiniciar
+
+`HostBroadcast` cuando `room.status === "ended"` ahora dibuja una franja inferior con 2 CTAs:
+
+- **Cerrar partida** (outline) → `window.location.assign("/")`. **No** toca la cookie. El host sigue autenticado para crear más partidas sin re-passphrase.
+- **Reiniciar partida** (cyan glow) → `window.location.assign("/?restart=1")`. La home detecta el query param y abre el dialog "Crear partida" automáticamente.
+
+Por qué hard-navigation y no `router.push`: `useRoomChannel` tiene un guard `maxStatus(prev, data)` (anti-race entre Pusher y polling) que impide bajar de `ended` a `lobby` en el cliente. Si reusas el árbol React tras crear una sala nueva, el cliente sigue creyendo que está `ended` y `HostBroadcast` no se desmonta. El reload limpio lo resuelve sin tocar el invariante.
+
+`EndedView` del player gana un botón **Volver al inicio** (`router.push("/")` — aquí sí sirve porque el route cambia y la suscripción Pusher se recrea limpia).
+
+### 3. Parametrización runtime: duración stage + max jugadores
+
+Schema:
+
+```sql
+ALTER TABLE rooms ADD COLUMN stage_duration_ms int NOT NULL DEFAULT 30000;
+ALTER TABLE rooms ADD COLUMN max_players int NOT NULL DEFAULT 50;
+```
+
+Migración: `drizzle/0002_odd_senator_kelly.sql`. La `STAGE_DURATION_OVERRIDE_MS` env var del módulo `typing.ts` queda obsoleta (sigue ahí pero ya nadie la lee — la duración se decide por sala, no por proceso).
+
+Endpoints:
+
+- **`GET /api/host/me`** (nuevo): `{ authenticated: boolean }`. La home lo llama on-mount para decidir si esconde el campo passphrase del dialog.
+- **`POST /api/room`**: ahora acepta `{ passphrase?, stageDurationMs?, maxPlayers? }`. Auth = cookie host válida **o** passphrase correcta. Validación zod: `stageDurationMs ∈ [5000, 600000]`, `maxPlayers ∈ [1, 100]`. Defaults 30000 / 50.
+- **`POST /api/room/[code]/join`**: cuenta `players` actuales y devuelve `409 room full` si llega al `room.maxPlayers`.
+- **`POST /api/room/[code]/start`** y **`/end-stage`**: usan `room.stageDurationMs` (no `stage.durationMs` del módulo) tanto en el broadcast como en el check de `elapsed >= duration`.
+- **`GET /api/room/[code]`**: snapshot incluye `maxPlayers` y `stageDurationMs`.
+
+Cliente:
+
+- `useRoomChannel` añade `maxPlayers` al state (default 50, override desde el snapshot).
+- Todos los `/50` hardcodeados en `host-pregame.tsx`, `host-broadcast.tsx`, `play-client.tsx` lobby ahora leen `room.maxPlayers`.
+- Dialog "Crear partida" en `(public)/page.tsx`: passphrase condicional (oculta si `hostAuthed`), grid 2-col con 2 number inputs (DURACIÓN seg, JUGADORES MÁX). Auto-abre si `?restart=1` en la URL.
+
+### Lo que NO se cambió
+
+- Motor de stages, anti-cheat, schema de `players`/`scores`, eventos Pusher.
+- `useRoomChannel.maxStatus` (el invariante anti-race sigue intacto — la solución del restart fue navegación dura, no romper el guard).
+
+---
+
 ## Estado: `scale-50p-v1` (post-`look-and-feel-v1`)
 
 Plan ejecutado: `~/.claude/plans/me-gustaria-planificar-como-squishy-hopcroft.md`. Sesión enfocada en **validar y arreglar la promesa de 50 jugadores concurrentes** de `mission.md`. Tres commits:

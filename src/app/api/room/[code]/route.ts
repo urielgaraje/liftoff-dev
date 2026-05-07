@@ -46,7 +46,7 @@ export async function GET(
       stage = {
         stageIndex: room.currentStageIndex,
         stageId: def.id,
-        durationMs: def.durationMs,
+        durationMs: room.stageDurationMs,
         init: room.stageInit,
         startedAt: room.stageStartedAt.toISOString(),
       };
@@ -59,6 +59,8 @@ export async function GET(
   return NextResponse.json({
     code: room.code,
     status: room.status,
+    maxPlayers: room.maxPlayers,
+    stageDurationMs: room.stageDurationMs,
     players: list.map((p) => ({
       id: p.id,
       nickname: p.nickname,

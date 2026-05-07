@@ -43,6 +43,7 @@ export async function POST(
 
   const init = stage.buildInit();
   const startedAt = new Date();
+  const durationMs = room.stageDurationMs;
 
   await db
     .update(rooms)
@@ -57,7 +58,7 @@ export async function POST(
   await broadcast(code, EVENT.StageStarted, {
     stageIndex: 0,
     stageId: stage.id,
-    durationMs: stage.durationMs,
+    durationMs,
     init,
     startedAt: startedAt.toISOString(),
   });
@@ -65,6 +66,6 @@ export async function POST(
   return NextResponse.json({
     stageIndex: 0,
     stageId: stage.id,
-    durationMs: stage.durationMs,
+    durationMs,
   });
 }

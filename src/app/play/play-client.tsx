@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Rocket } from "@/components/game/rocket";
 import { RoomBadge } from "@/components/shared/room-badge";
+import { BackgroundMusic } from "@/components/shared/background-music";
 import { StageRenderer } from "@/components/game/stages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +75,7 @@ export function PlayClient({ code, alreadyJoined, playerId }: Props) {
   if (local === "pre-join") {
     return (
       <main className="flex min-h-screen flex-col">
+        <BackgroundMusic phase="lobby" />
         <header className="flex items-center justify-between p-6">
           <motion.p
             animate={{ opacity: [0.7, 1, 0.7] }}
@@ -183,27 +186,52 @@ function JoinedView({ code, playerId }: { code: string; playerId: string | null 
     };
   }, [playerId, room.players]);
 
+  const phase =
+    room.status === "racing"
+      ? "stage"
+      : room.status === "ended"
+        ? "ended"
+        : "lobby";
+
+  const music = (
+    <BackgroundMusic
+      phase={phase}
+      stageIndex={room.stage?.stageIndex ?? null}
+    />
+  );
+
   if (room.status === "racing" && room.stage) {
     return (
-      <StageRenderer
-        code={code}
-        stageId={room.stage.stageId}
-        stageIndex={room.stage.stageIndex}
-        startedAt={room.stage.startedAt}
-        durationMs={room.stage.durationMs}
-        init={room.stage.init}
-        selfPlayer={selfPlayer}
-      />
+      <>
+        {music}
+        <StageRenderer
+          code={code}
+          stageId={room.stage.stageId}
+          stageIndex={room.stage.stageIndex}
+          startedAt={room.stage.startedAt}
+          durationMs={room.stage.durationMs}
+          init={room.stage.init}
+          selfPlayer={selfPlayer}
+        />
+      </>
     );
   }
 
   if (room.status === "ended") {
     return (
-      <EndedView code={code} lastEnded={room.lastEnded} selfPlayer={selfPlayer} />
+      <>
+        {music}
+        <EndedView code={code} lastEnded={room.lastEnded} selfPlayer={selfPlayer} />
+      </>
     );
   }
 
-  return <LobbyView code={code} room={room} selfPlayer={selfPlayer} />;
+  return (
+    <>
+      {music}
+      <LobbyView code={code} room={room} selfPlayer={selfPlayer} />
+    </>
+  );
 }
 
 function LobbyView({
@@ -236,7 +264,7 @@ function LobbyView({
           <RoomBadge code={code} withDot />
         </div>
         <div className="rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
-          {ready}/50 listos
+          {ready}/{room.maxPlayers} listos
         </div>
       </header>
 
@@ -316,7 +344,7 @@ function LobbyView({
 
         <div className="flex w-full max-w-3xl flex-col items-center gap-3">
           <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
-            COHETES EN PISTA · {ready}/50
+            COHETES EN PISTA · {ready}/{room.maxPlayers}
           </p>
           <ul
             className="flex flex-wrap items-center justify-center gap-4"
@@ -399,6 +427,7 @@ function EndedView({
   lastEnded: ReturnType<typeof useRoomChannel>["lastEnded"];
   selfPlayer: SelfPlayer | null;
 }) {
+  const router = useRouter();
   const board = lastEnded?.leaderboard ?? [];
   const top3 = board.slice(0, 3);
   const selfIndex = selfPlayer
@@ -509,6 +538,15 @@ function EndedView({
           </span>
         </motion.div>
       )}
+
+      <Button
+        type="button"
+        onClick={() => router.push("/")}
+        data-testid="play-home"
+        className="h-10 bg-accent-cyan px-5 font-semibold text-bg-primary shadow-[0_0_24px_var(--color-accent-cyan)] hover:bg-accent-cyan/90"
+      >
+        Volver al inicio
+      </Button>
 
       <p className="font-mono text-[10px] tracking-[0.3em] text-fg-muted">
         SALA · {code}

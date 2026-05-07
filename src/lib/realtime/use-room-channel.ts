@@ -29,6 +29,7 @@ export type StageEndedInfo = {
 
 type RoomState = {
   status: "lobby" | "racing" | "ended";
+  maxPlayers: number;
   players: PlayerSnapshot[];
   stage: StageInfo | null;
   progress: Record<string, number>;
@@ -39,6 +40,7 @@ type RoomState = {
 
 const INITIAL: RoomState = {
   status: "lobby",
+  maxPlayers: 50,
   players: [],
   stage: null,
   progress: {},
@@ -49,6 +51,7 @@ const INITIAL: RoomState = {
 
 type Snapshot = {
   status: RoomState["status"];
+  maxPlayers?: number;
   players: PlayerSnapshot[];
   stage: StageInfo | null;
   progress: Record<string, number>;
@@ -112,6 +115,7 @@ export function useRoomChannel(
           return {
             ...prev,
             status,
+            maxPlayers: data.maxPlayers ?? prev.maxPlayers,
             players: Array.from(byId.values()),
             stage,
             progress: mergedProgress,

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { setPlayerCookie } from "@/lib/auth/player";
@@ -43,6 +43,14 @@ export async function POST(
   }
   if (room.status !== "lobby") {
     return NextResponse.json({ error: "room closed" }, { status: 409 });
+  }
+
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(players)
+    .where(eq(players.roomId, room.id));
+  if (count >= room.maxPlayers) {
+    return NextResponse.json({ error: "room full" }, { status: 409 });
   }
 
   const [player] = await db

@@ -1,7 +1,11 @@
 import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { setHostCookie, checkHostPassphrase } from "@/lib/auth/host";
+import {
+  checkHostPassphrase,
+  getHostRoomId,
+  setHostCookie,
+} from "@/lib/auth/host";
 import { db } from "@/lib/db";
 import { rooms } from "@/lib/db/schema";
 import { generateRoomCode } from "@/lib/game/code";
@@ -9,7 +13,9 @@ import { generateRoomCode } from "@/lib/game/code";
 export const runtime = "nodejs";
 
 const Body = z.object({
-  passphrase: z.string().min(1),
+  passphrase: z.string().min(1).optional(),
+  stageDurationMs: z.number().int().min(5000).max(600000).optional(),
+  maxPlayers: z.number().int().min(1).max(100).optional(),
 });
 
 export async function POST(req: Request) {
@@ -23,8 +29,15 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
-  if (!checkHostPassphrase(parsed.data.passphrase)) {
-    return NextResponse.json({ error: "wrong passphrase" }, { status: 401 });
+
+  const hostRoomId = await getHostRoomId();
+  if (!hostRoomId) {
+    if (
+      !parsed.data.passphrase ||
+      !checkHostPassphrase(parsed.data.passphrase)
+    ) {
+      return NextResponse.json({ error: "wrong passphrase" }, { status: 401 });
+    }
   }
 
   await db
@@ -32,14 +45,16 @@ export async function POST(req: Request) {
     .set({ status: "ended" })
     .where(inArray(rooms.status, ["lobby", "racing"]));
 
-  let code = "";
+  const stageDurationMs = parsed.data.stageDurationMs ?? 30000;
+  const maxPlayers = parsed.data.maxPlayers ?? 50;
+
   let inserted = null;
   for (let attempt = 0; attempt < 5; attempt++) {
-    code = generateRoomCode();
+    const code = generateRoomCode();
     try {
       const rows = await db
         .insert(rooms)
-        .values({ code, status: "lobby" })
+        .values({ code, status: "lobby", stageDurationMs, maxPlayers })
         .returning();
       inserted = rows[0];
       break;

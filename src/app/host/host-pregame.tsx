@@ -72,7 +72,7 @@ export function HostPreGame({ code, playUrl, room }: Props) {
         </motion.p>
         <div className="flex items-center gap-2 rounded-full bg-bg-tertiary/80 px-3 py-1.5 font-mono text-xs text-fg-secondary backdrop-blur">
           <Users size={14} />
-          <span data-testid="host-count">{players.length}/50</span>
+          <span data-testid="host-count">{players.length}/{room.maxPlayers}</span>
         </div>
       </header>
 
@@ -123,7 +123,7 @@ export function HostPreGame({ code, playUrl, room }: Props) {
 
         <div className="flex w-full max-w-3xl flex-col items-center gap-3">
           <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
-            COHETES EN PISTA · {players.length}/50
+            COHETES EN PISTA · {players.length}/{room.maxPlayers}
           </p>
           {hasPlayers ? (
             <ul

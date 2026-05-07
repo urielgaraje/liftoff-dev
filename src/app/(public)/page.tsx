@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -45,14 +45,43 @@ function EyebrowPill({ children }: { children: ReactNode }) {
 
 export default function LandingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [code, setCode] = useState("");
   const [joinError, setJoinError] = useState<string | null>(null);
 
   const [hostOpen, setHostOpen] = useState(false);
   const [passphrase, setPassphrase] = useState("");
+  const [stageDurationS, setStageDurationS] = useState("30");
+  const [maxPlayers, setMaxPlayers] = useState("50");
   const [hostError, setHostError] = useState<string | null>(null);
   const [hostBusy, setHostBusy] = useState(false);
+  const [hostAuthed, setHostAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/host/me", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { authenticated: false }))
+      .then((data: { authenticated?: boolean }) => {
+        if (cancelled) return;
+        setHostAuthed(Boolean(data.authenticated));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHostAuthed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get("restart") === "1") {
+      // open dialog when arriving via /?restart=1 from the host podium
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHostOpen(true);
+    }
+  }, [searchParams]);
 
   const onJoin = (e: FormEvent) => {
     e.preventDefault();
@@ -68,12 +97,30 @@ export default function LandingPage() {
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
     setHostError(null);
+
+    const durationS = Number(stageDurationS);
+    const maxN = Number(maxPlayers);
+    if (!Number.isFinite(durationS) || durationS < 5 || durationS > 600) {
+      setHostError("Duración entre 5 y 600 segundos");
+      return;
+    }
+    if (!Number.isFinite(maxN) || maxN < 1 || maxN > 100) {
+      setHostError("Jugadores entre 1 y 100");
+      return;
+    }
+
     setHostBusy(true);
     try {
+      const payload: Record<string, unknown> = {
+        stageDurationMs: Math.round(durationS * 1000),
+        maxPlayers: maxN,
+      };
+      if (!hostAuthed) payload.passphrase = passphrase;
+
       const res = await fetch("/api/room", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passphrase }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -197,23 +244,69 @@ export default function LandingPage() {
             aria-label="crear partida"
             className="mt-2 flex flex-col gap-3"
           >
-            <p className="font-mono text-[11px] font-bold tracking-[0.2em] text-fg-muted">
-              PASSPHRASE
-            </p>
-            <Input
-              type="password"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              placeholder="••••••••"
-              className="h-[52px] rounded-[10px] border-bg-tertiary bg-bg-tertiary px-4 font-mono text-base text-fg-primary"
-              autoComplete="off"
-              autoFocus
-              aria-label="passphrase de host"
-              data-testid="host-passphrase"
-            />
+            {!hostAuthed && (
+              <>
+                <p className="font-mono text-[11px] font-bold tracking-[0.2em] text-fg-muted">
+                  PASSPHRASE
+                </p>
+                <Input
+                  type="password"
+                  value={passphrase}
+                  onChange={(e) => setPassphrase(e.target.value)}
+                  placeholder="••••••••"
+                  className="h-[52px] rounded-[10px] border-bg-tertiary bg-bg-tertiary px-4 font-mono text-base text-fg-primary"
+                  autoComplete="off"
+                  autoFocus
+                  aria-label="passphrase de host"
+                  data-testid="host-passphrase"
+                />
+              </>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="stage-duration"
+                  className="font-mono text-[11px] font-bold tracking-[0.2em] text-fg-muted"
+                >
+                  DURACIÓN (s)
+                </label>
+                <Input
+                  id="stage-duration"
+                  type="number"
+                  min={5}
+                  max={600}
+                  value={stageDurationS}
+                  onChange={(e) => setStageDurationS(e.target.value)}
+                  className="h-[52px] rounded-[10px] border-bg-tertiary bg-bg-tertiary px-4 font-mono text-base text-fg-primary"
+                  aria-label="duración del stage en segundos"
+                  data-testid="host-duration"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="max-players"
+                  className="font-mono text-[11px] font-bold tracking-[0.2em] text-fg-muted"
+                >
+                  JUGADORES MÁX
+                </label>
+                <Input
+                  id="max-players"
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={maxPlayers}
+                  onChange={(e) => setMaxPlayers(e.target.value)}
+                  className="h-[52px] rounded-[10px] border-bg-tertiary bg-bg-tertiary px-4 font-mono text-base text-fg-primary"
+                  aria-label="número máximo de jugadores"
+                  data-testid="host-max-players"
+                />
+              </div>
+            </div>
+
             <Button
               type="submit"
-              disabled={!passphrase || hostBusy}
+              disabled={(!hostAuthed && !passphrase) || hostBusy}
               data-testid="host-create"
               className={`h-[56px] text-base ${NEON_CTA}`}
             >
@@ -225,7 +318,9 @@ export default function LandingPage() {
               </p>
             )}
             <p className="text-xs text-fg-muted">
-              La passphrase la define HOST_PASSPHRASE del entorno.
+              {hostAuthed
+                ? "Sesión de host activa. No hace falta passphrase."
+                : "La passphrase la define HOST_PASSPHRASE del entorno."}
             </p>
           </form>
         </DialogContent>

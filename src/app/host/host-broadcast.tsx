@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { HostPodium } from "@/components/game/host-podium";
 import { Rocket } from "@/components/game/rocket";
 import { RocketTrail } from "@/components/game/rocket-trail";
+import { Button } from "@/components/ui/button";
 import { type RocketSkin } from "@/lib/game/skins";
 import { type useRoomChannel } from "@/lib/realtime/use-room-channel";
 import { cn } from "@/lib/utils";
@@ -72,14 +73,19 @@ export function HostBroadcast({ room }: Props) {
             </div>
           )}
           <div className="rounded-full bg-bg-tertiary px-3 py-1.5 font-mono text-xs text-fg-secondary">
-            {room.players.length}/50
+            {room.players.length}/{room.maxPlayers}
           </div>
         </div>
       </header>
 
       <div className="grid flex-1 grid-cols-[1fr_360px]">
         {room.status === "ended" && room.lastEnded ? (
-          <HostPodium leaderboard={room.lastEnded.leaderboard} />
+          <div className="flex flex-col">
+            <div className="flex flex-1 flex-col">
+              <HostPodium leaderboard={room.lastEnded.leaderboard} />
+            </div>
+            <HostEndedActions />
+          </div>
         ) : (
         <section className="relative flex flex-col items-center justify-end overflow-hidden p-12">
           <div
@@ -163,7 +169,7 @@ export function HostBroadcast({ room }: Props) {
               LEADERBOARD
             </p>
             <p className="font-mono text-xs text-accent-cyan">
-              {room.players.length}/50
+              {room.players.length}/{room.maxPlayers}
             </p>
           </div>
           <ul
@@ -199,5 +205,48 @@ export function HostBroadcast({ room }: Props) {
       </div>
 
     </main>
+  );
+}
+
+function HostEndedActions() {
+  const [busy, setBusy] = useState<"close" | "restart" | null>(null);
+
+  const onClose = () => {
+    if (busy) return;
+    setBusy("close");
+    window.location.assign("/");
+  };
+
+  const onRestart = () => {
+    if (busy) return;
+    setBusy("restart");
+    window.location.assign("/?restart=1");
+  };
+
+  return (
+    <div
+      className="flex items-center justify-center gap-3 border-t border-bg-tertiary px-12 py-6"
+      data-testid="host-ended-actions"
+    >
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onClose}
+        disabled={busy !== null}
+        data-testid="host-close"
+        className="h-10 px-5"
+      >
+        {busy === "close" ? "Cerrando…" : "Cerrar partida"}
+      </Button>
+      <Button
+        type="button"
+        onClick={onRestart}
+        disabled={busy !== null}
+        data-testid="host-restart"
+        className="h-10 bg-accent-cyan px-5 font-semibold text-bg-primary shadow-[0_0_24px_var(--color-accent-cyan)] hover:bg-accent-cyan/90"
+      >
+        {busy === "restart" ? "Reiniciando…" : "Reiniciar partida"}
+      </Button>
+    </div>
   );
 }

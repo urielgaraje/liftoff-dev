@@ -18,6 +18,8 @@ export const rooms = pgTable("rooms", {
   currentStageIndex: integer("current_stage_index").notNull().default(-1),
   stageStartedAt: timestamp("stage_started_at", { withTimezone: true }),
   stageInit: jsonb("stage_init"),
+  stageDurationMs: integer("stage_duration_ms").notNull().default(30000),
+  maxPlayers: integer("max_players").notNull().default(50),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

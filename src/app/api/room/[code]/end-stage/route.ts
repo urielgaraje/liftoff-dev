@@ -57,9 +57,9 @@ export async function POST(
   }
 
   const elapsed = Date.now() - room.stageStartedAt.getTime();
-  if (elapsed < stage.durationMs) {
+  if (elapsed < room.stageDurationMs) {
     return NextResponse.json(
-      { error: "too early", remainingMs: stage.durationMs - elapsed },
+      { error: "too early", remainingMs: room.stageDurationMs - elapsed },
       { status: 409 },
     );
   }
@@ -132,7 +132,7 @@ export async function POST(
     await broadcast(code, EVENT.StageStarted, {
       stageIndex: fromStageIndex + 1,
       stageId: next.id,
-      durationMs: next.durationMs,
+      durationMs: room.stageDurationMs,
       init: advanced.nextInit,
       startedAt: advanced.nextStartedAt!.toISOString(),
     });
