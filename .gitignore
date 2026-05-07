@@ -21,3 +21,4 @@ next-env.d.ts
 /*.png
 .playwright-mcp/
 .vercel
+.claude/

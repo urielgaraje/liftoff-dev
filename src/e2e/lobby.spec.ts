@@ -1,40 +1,7 @@
-import { test, expect, type Browser, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import { fresh, hostCreatesRoom, playerJoins } from "./helpers";
 
 const PASSPHRASE = process.env.HOST_PASSPHRASE;
-
-async function fresh(browser: Browser): Promise<Page> {
-  const ctx = await browser.newContext();
-  return ctx.newPage();
-}
-
-async function hostCreatesRoom(host: Page): Promise<string> {
-  await host.goto("/");
-  await host.getByTestId("host-open").click();
-  await host.getByTestId("host-passphrase").fill(PASSPHRASE!);
-  await host.getByTestId("host-create").click();
-  await expect(host).toHaveURL(/\/host$/);
-  const codeEl = host.getByTestId("host-code");
-  await expect(codeEl).toBeVisible();
-  const code = (await codeEl.textContent())?.trim();
-  expect(code, "host code should be visible").toMatch(/^[A-HJ-NP-Z2-9]{4}$/);
-  return code!;
-}
-
-async function playerJoins(
-  page: Page,
-  code: string,
-  nickname: string,
-  skin: string,
-): Promise<void> {
-  await page.goto("/");
-  await page.getByTestId("join-code").fill(code);
-  await page.getByTestId("join-submit").click();
-  await expect(page).toHaveURL(new RegExp(`/play\\?code=${code}`));
-  await page.getByTestId("nickname-input").fill(nickname);
-  await page.getByTestId(`skin-${skin}`).click();
-  await page.getByTestId("join-rocket").click();
-  await expect(page.getByTestId("lobby")).toBeVisible();
-}
 
 test.describe("vertical slice — lobby sync", () => {
   test.skip(!PASSPHRASE, "HOST_PASSPHRASE missing in env");
@@ -46,7 +13,7 @@ test.describe("vertical slice — lobby sync", () => {
     const playerB = await fresh(browser);
     const playerC = await fresh(browser);
 
-    const code = await hostCreatesRoom(host);
+    const code = await hostCreatesRoom(host, PASSPHRASE!);
 
     await Promise.all([
       playerJoins(playerB, code, "alice", "magenta"),
