@@ -5,7 +5,77 @@
 
 ---
 
-## Estado: `look-and-feel-v1` (post-`stage-1-typing-v1`)
+## Estado: `scale-50p-v1` (post-`look-and-feel-v1`)
+
+Plan ejecutado: `~/.claude/plans/me-gustaria-planificar-como-squishy-hopcroft.md`. Sesión enfocada en **validar y arreglar la promesa de 50 jugadores concurrentes** de `mission.md`. Tres commits:
+
+- `d5fe6e1` perf(realtime+db): in-memory progress, Neon WS pool, split Pusher channel
+- `1a8409a` test: harness load test 50 jugadores + helpers e2e compartidos
+- `73622f5` refactor(typing): quitar pill de posición del jugador
+
+**Resultado del stress test 50 jugadores (medido):**
+
+| Métrica | Antes | Después |
+|---|---|---|
+| Error rate | 77.25% | **0.00%** |
+| 5xx + network errors | 2129 | **0** |
+| Progress p95 | 23.095ms | **~500ms** (46×) |
+| Broadcast p95 | 18.174ms | **~600ms** (31×) |
+| Mensajes Pusher / partida 50p | ~150.000 | **~3.000** (50×) |
+
+### Lo que aporta `scale-50p-v1`
+
+**1. Progress store en memoria** (`src/lib/game/progress-store.ts`).
+`/api/room/[code]/progress` ya no escribe a DB en cada tick. El store es un `Map<{code,stageIndex}, Map<playerId, value>>` a nivel de proceso Next. Lee `prev` de memoria, valida (`validateProgress`, mismo anti-cheat), escribe `next` a memoria. La DB pasa de 100 writes/s a 50 writes por stage (uno por jugador al cerrar, en bulk INSERT desde `/end-stage`). GET snapshot también lee del store para rooms en racing.
+
+Trade-off documentado: el store vive en el proceso. Si Liftoff escala a multi-instancia en Vercel, el map se migra a Upstash Redis (marketplace) — cambio aislado en `progress-store.ts`. Hoy no hace falta (1 instancia, 1 región durante el evento).
+
+**2. Driver Neon HTTP → WebSocket Pool** (`src/lib/db/index.ts`).
+`@neondatabase/serverless` `neon()` hace fetch HTTP por query — bajo carga sostenida se satura (NeonDbError: fetch failed en cascada, vimos el error en logs). Swap a `Pool` con WebSocket persistente vía `drizzle-orm/neon-serverless`. Connection reuse real, latencia de queries de ~50-200ms a ~5-15ms.
+
+**3. Canal Pusher split** (`src/lib/realtime/server.ts`, `src/lib/realtime/use-room-channel.ts`).
+Antes: un solo canal `room-{code}` al que TODOS suscribían y por el que pasaban TODOS los eventos. Cada `progress-updated` se entregaba × 50 suscriptores → 50× amplificación de coste Pusher. Ahora:
+
+- `room-{code}` (control): `player-joined`, `player-left`, `room-updated`, `stage-started`, `stage-ended`. Todos suscriben.
+- `room-{code}-progress`: solo el host opta in vía `useRoomChannel(code, { withProgress: true })` (en `host-router.tsx`). El jugador NO suscribe.
+
+Consecuencia: el jugador ya no recibe `progress-updated` durante el stage. El pill "POSICIÓN #N de 50" se ha eliminado del typing-stage (`refactor 73622f5`) — no se actualizaba en vivo, solo cada 5s vía polling, y mentía más que ayudaba. El ranking final sigue apareciendo en el leaderboard al cierre del stage.
+
+**4. Tick rate del cliente 500ms → 1000ms** (`typing-stage.tsx:10`).
+Halves la huella Pusher sin pérdida visual perceptible (Framer Motion sigue interpolando los saltos de los cohetes en el host broadcast).
+
+**5. Robustez: errores Pusher no propagan al cliente.**
+`/progress` ahora envuelve `broadcastProgress` en try/catch. Si Pusher falla (rate limit, downtime, lo que sea), el estado ya quedó guardado en el store y el cliente recibe `200`. El polling de 5s recupera el estado eventualmente. Antes un fallo Pusher devolvía 500 y rompía la partida.
+
+### Harness de load test (`src/load-test/`)
+
+Script: `pnpm test:load`. Orquestador en Node que lanza:
+- 1 host browser real (Playwright `chromium.launch()`, no usa el runner — sin `webServer` ni `test()`).
+- N-1 browser players (configurable `BROWSER_COUNT`).
+- M = `PLAYER_COUNT - (BROWSER_COUNT-1)` simuladores Node headless con `pusher-js` + cookie capture del `/join` + setInterval de progress cada 1s con curva 15 chars/s.
+- 1 monitor único suscrito a `room-{code}-progress` que mide broadcast lag para todos los simuladores (vía `sentRegistry` compartido).
+
+Configuración por env: `LOAD_BASE_URL`, `PLAYER_COUNT`, `BROWSER_COUNT`, `STAGE_DURATION_MS` (polling budget), `HEADLESS`, `JOIN_STAGGER_MS`.
+
+Reporte tabular con thresholds (errores >1%, p95 progress >800ms, p95 broadcast >1s = FAIL). Útil pre-evento para validar que la infra aguanta.
+
+Refactor menor incluido: extraídos `fresh`, `hostCreatesRoom`, `playerJoins`, `typeChars` desde los specs e2e a `src/e2e/helpers.ts` para que el harness los reuse sin duplicar. Los specs existentes los importan; comportamiento idéntico, solo subo timeouts del `toHaveURL`/`toBeVisible` para tolerar Turbopack first-compile en dev.
+
+Caveats descubiertos durante validación:
+- Pusher cuenta cada delivery × cada subscriber (no por publish). Una partida 50p con la arquitectura vieja eran 150k mensajes; con la nueva, 3k.
+- El contador del dashboard de Pusher se resetea a las 00:00 UTC, NO al renovar/upgradear plan. Una renovación mid-day no borra el conteo del día.
+- Corriendo el load test en local, los Playwright browsers headless saturan CPU si subes mucho `BROWSER_COUNT`. Para mediciones limpias del backend usar `BROWSER_COUNT=1` (solo host); en producción cada cliente está en su propia máquina, esa contención no existe.
+
+### Lo que NO se cambió
+
+- Schema (no hace falta — el store usa la tabla `scores` existente, solo cambia QUIÉN escribe y CUÁNDO).
+- Game logic / anti-cheat (`validateProgress` igual, ahora con `prev` de memoria en vez de DB).
+- API contract (mismas rutas, mismos shapes de request/response).
+- Eventos Pusher (mismos nombres, mismo payload — solo el canal cambia para `progress-updated`).
+
+---
+
+### Lo que vino en `look-and-feel-v1` (slice anterior)
 
 Plan ejecutado: `~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md`. Stage 1 (typing race) sigue siendo el único stage implementado; toda la sesión fue **polish visual, animaciones, fix del bug de selfPlayer y sincronización con el `.pen`** para llegar a la charla con la app pulida.
 
@@ -50,6 +120,8 @@ Plan ejecutado: `~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md`. S
 
 - `starter-rich-v1` → scaffold + servicios externos.
 - `vertical-slice-v1` → Landing + Player Join + Lobby + sync Pusher (DB → API → realtime → UI → E2E).
+- `stage-1-typing-v1` → typing race con StageModule + scores + anti-cheat + E2E.
+- `look-and-feel-v1` → polish visual completo previo a la charla (StarField, motion trails, podium, planeta del PreGame, microanimaciones, fix `selfPlayer`).
 
 ---
 
@@ -151,6 +223,17 @@ Migración: `drizzle/0001_talented_randall_flagg.sql`.
 
 ---
 
+## Decisiones cerradas en `scale-50p-v1`
+
+- **Progress write path**: `/progress` no escribe a DB, solo a memoria del proceso (`progress-store.ts`). DB solo se toca en `/end-stage` con un bulk INSERT al cerrar. Trade-off aceptado: el store es per-proceso; promote a Upstash Redis si pasamos a multi-instancia. Para 1 instancia / 1 región durante un evento, suficiente.
+- **DB driver**: `Pool` (WebSocket) sobre `drizzle-orm/neon-serverless`. Connection reuse persistente. El driver HTTP `neon()` se descartó tras ver `NeonDbError: fetch failed` en cascada bajo 100 req/s.
+- **Pusher channel split**: control en `room-{code}` (todos), progress en `room-{code}-progress` (solo host). Reduce mensajes Pusher por partida 50×. El jugador pierde el rank en vivo durante el typing — aceptado, ya no era fiable post-polling.
+- **Tick rate cliente**: 1000ms (antes 500ms). Mitiga la huella Pusher otra mitad sin pérdida visual.
+- **Errores Pusher en `/progress` no bubble al cliente**: el estado ya quedó en el store, devolvemos `200`. El polling de 5s recupera. Resiliente a baches de Pusher / quota exceeded.
+- **Threshold del load test**: errores >1%, p95 progress >800ms, p95 broadcast >1s = FAIL. Defendibles para 50p en una máquina de evento (1 server Vercel + 50 clientes en su LAN).
+
+---
+
 ## Cómo continuar
 
 ### Próximo slice: `stage-2-anagram-v1`
@@ -182,6 +265,10 @@ pnpm typecheck && pnpm build
 pnpm vitest run
 pnpm test:e2e
 curl -s -o /dev/null -w "%{http_code}\n" https://liftoff-app-dev.vercel.app/api/health
+
+# Stress test 50 jugadores (requiere prod build local en otro terminal):
+#   pnpm build && pnpm start
+PLAYER_COUNT=50 BROWSER_COUNT=1 pnpm test:load
 ```
 
 ---

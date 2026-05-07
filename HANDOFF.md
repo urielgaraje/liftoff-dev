@@ -8,19 +8,19 @@
 
 Race multijugador de cohetes para una charla de agentic engineering (ver `mission.md` para el qué). Stack: Next.js 16 · Tailwind v4 · shadcn · Drizzle/Neon · Pusher · Playwright · Framer Motion. Deploy: Vercel + Neon + Pusher.
 
-**Estado**: `stage-1-typing-v1` (último tag) + slice **`look-and-feel-v1`** (24 commits desde `7acda09` hasta `18ae8b8`). Polish visual completo previo a la charla:
-- StarField global con paralaje + warp trails en host.
-- Cohete con SVG custom + llama desde la cola + trail de partículas + intensidad por ranking.
-- Player Lobby con cohete propio gigante y disco pulsante.
-- Host PreGame rediseñado con planeta verde gigante animado (nubes, tormenta, halo).
-- HostPodium con aterrizaje top 3 y pillars con medallas.
-- Player End con top 3 + medallas + fila destacada.
-- Typing scrollable de 3 líneas con karaoke-scroll.
-- Microanimaciones (banner, lobby cards, logos, landing).
-- Bug crítico fixeado: `selfPlayer` null tras join (cohete propio del lobby no renderizaba).
-- `.pen` sincronizado: HostPodium reescrito en Pencil, share button del Player End borrado.
+**Estado**: `stage-1-typing-v1` (último tag) + slice **`scale-50p-v1`** (3 commits: `d5fe6e1`, `1a8409a`, `73622f5`).
 
-Pipa completa probada (DB → API → Pusher → UI → E2E multi-browser). Primera etapa de juego (typing race) funciona end-to-end y se reproduce en prod. Sigue faltando: 2 etapas más + endgame de juego (player progress real, no solo typing).
+Sesión enfocada en **validar y arreglar la promesa de 50 jugadores concurrentes** de `mission.md`. Stress test reveló que la arquitectura previa colapsaba bajo carga (77% de errores, p95 23s). Tres cambios:
+
+- **Progress store en memoria** (`src/lib/game/progress-store.ts`) — `/progress` ya no escribe a DB; solo `/end-stage` hace bulk INSERT al cerrar.
+- **Driver Neon HTTP → WebSocket Pool** — connection reuse persistente, latencia de queries de ~50-200ms a ~5-15ms.
+- **Canal Pusher split** — control en `room-{code}` (todos), progress en `room-{code}-progress` (solo host opta in vía `useRoomChannel(code, { withProgress: true })`). Reduce mensajes Pusher por partida 50×. El jugador ya no tiene rank en vivo durante el stage (pill eliminado en `73622f5`).
+- **Tick cliente 500ms → 1000ms** — halves la huella Pusher restante.
+- **Resultado medido (50p × 30s)**: 0% errores, progress p95 ~500ms, broadcast p95 ~600ms, ~3000 mensajes Pusher / partida (antes ~150.000).
+
+Plus **harness de load test** (`src/load-test/`, `pnpm test:load`) reproducible — 1 host browser + simuladores Node con `pusher-js`. Helpers e2e extraídos a `src/e2e/helpers.ts` (también beneficia los specs existentes).
+
+Slice anterior `look-and-feel-v1` siguió siendo el polish visual (StarField, motion trails, podium, planeta del PreGame, microanimaciones, fix `selfPlayer`). Pipa completa probada (DB → API → Pusher → UI → E2E multi-browser → load test). Sigue faltando: 2 etapas más + endgame de juego (player progress real, no solo typing).
 
 **Prod**: https://liftoff-app-dev.vercel.app/ · **Repo**: https://github.com/urielgaraje/liftoff-dev
 
@@ -46,6 +46,10 @@ pnpm vitest run                             # 6 unit tests
 pnpm test:e2e                               # 4 E2E chromium + firefox (~40s)
 curl -s -o /dev/null -w "%{http_code}\n" \
   https://liftoff-app-dev.vercel.app/api/health    # 200
+
+# Stress test 50p contra prod build local (1 terminal arranca server, otro lanza el harness):
+pnpm build && pnpm start                    # terminal A
+PLAYER_COUNT=50 BROWSER_COUNT=1 pnpm test:load  # terminal B (~60s; PASS = 0 errores y p95 sub-segundo)
 ```
 
 Si Neon MCP no aparece tras reinicio, llama a cualquier `mcp__neon__*` y completa OAuth. Token persiste en `~/.claude.json`.
@@ -93,6 +97,7 @@ Ver `CLAUDE.md §"Decisiones pendientes"` y `progress.md §"Decisiones aún abie
 
 ## Limitaciones conocidas (no bloquean)
 
+- **Jugador no ve rank en vivo durante el typing** (consecuencia del Pusher channel split en `scale-50p-v1`). Pill eliminado; el ranking aparece al cierre del stage en el leaderboard. Si en el futuro queremos rank en vivo barato, opción: el server publica una vez cada 2-5s un evento `ranks-updated` (1 publish × 50 subs = 50 msgs/s vs los 100 publishes/s × 50 subs = 5000 msgs/s del progress directo).
 - F5 (refresh) en una pestaña de player la trata como cierre y elimina al jugador (consecuencia del fix de `pagehide` + `sendBeacon`). Hay que volver a hacer join. Si fuera necesario sobrevivir el refresh, ir a heartbeat + TTL server-side.
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
 - **`HostBroadcast` (durante racing)** sigue con el layout original (grid `[1fr_360px]`). El `.pen` `OCThd` tiene un layout muy distinto pero no se sincronizó — pendiente para cuando se aborden stages 2/3.
@@ -115,6 +120,8 @@ F — Microanimaciones (banner, lobby cards, logos, landing).
 
 ## Plan de la sesión anterior
 
-`~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md` — plan look-and-feel-v1 con los 6 sub-slices A-F y notas finales.
+`~/.claude/plans/me-gustaria-planificar-como-squishy-hopcroft.md` — plan `scale-50p-v1` (harness de load test + arquitectura para 50p validada).
+
+Plan previo (look-and-feel): `~/.claude/plans/vale-sabemos-como-continuar-tingly-llama.md` — sub-slices A-F.
 
 Plan previo (arquitectura de stages): `~/.claude/plans/lo-de-auth-iria-wondrous-crayon.md`.
