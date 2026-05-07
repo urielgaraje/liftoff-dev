@@ -23,8 +23,6 @@ type Props = {
   durationMs: number;
   init: { paragraph: string };
   selfPlayer: SelfPlayer | null;
-  selfRank: number | null;
-  totalPlayers: number;
 };
 
 export function TypingStage({
@@ -33,8 +31,6 @@ export function TypingStage({
   startedAt,
   durationMs,
   init,
-  selfRank,
-  totalPlayers,
 }: Props) {
   const paragraph = init.paragraph;
   const startMs = new Date(startedAt).getTime();
@@ -167,18 +163,8 @@ export function TypingStage({
             })}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <p className="font-mono text-[10px] tracking-[0.4em] text-fg-muted">
-            POSICIÓN
-          </p>
-          <p
-            className="font-mono text-base text-accent-magenta tabular-nums"
-            data-testid="typing-altitude"
-          >
-            <span className="text-base">#{selfRank ?? "—"}</span>
-            <span className="ml-1 text-fg-muted">de {totalPlayers}</span>
-          </p>
-        </div>
+        <div />
+
       </header>
 
       <div className="flex flex-1 items-center justify-center px-10">
