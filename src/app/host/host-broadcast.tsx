@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { HostPodium } from "@/components/game/host-podium";
 import { Rocket } from "@/components/game/rocket";
 import { RocketTrail } from "@/components/game/rocket-trail";
@@ -116,6 +116,7 @@ export function HostBroadcast({ room }: Props) {
             className="relative grid w-full max-w-5xl grid-cols-8 gap-4"
             data-testid="broadcast-rockets"
           >
+            <AnimatePresence>
             {top8.map((p, idx) => {
               const ratio = topValue > 0 ? p.value / topValue : 0;
               const lift = Math.round(ratio * 200);
@@ -124,8 +125,13 @@ export function HostBroadcast({ room }: Props) {
                 .split("")
                 .reduce((acc, c) => acc + c.charCodeAt(0), idx);
               return (
-                <div
+                <motion.div
                   key={p.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 24 }}
                   data-testid={`broadcast-rocket-${p.nickname}`}
                   className="relative flex flex-col items-center"
                 >
@@ -156,9 +162,10 @@ export function HostBroadcast({ room }: Props) {
                       {p.value}
                     </span>
                   </motion.div>
-                </div>
+                </motion.div>
               );
             })}
+            </AnimatePresence>
           </div>
         </section>
         )}

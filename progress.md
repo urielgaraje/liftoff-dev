@@ -99,11 +99,20 @@ vercel env run --environment=production -- npx tsx ./apply-migration.ts
 - Motor de stages, anti-cheat, schema de `players`/`scores`, eventos Pusher.
 - `useRoomChannel.maxStatus` (el invariante anti-race sigue intacto — la solución del restart fue navegación dura, no romper el guard).
 
+### 7. Cleanup de cierre de slice
+
+- **Smooth ranking transitions en HostBroadcast**: añadido `<AnimatePresence>` + `motion.div` con `layout` prop a cada cohete del top 8. Ahora cuando alguien entra/sale del top o dos jugadores se cruzan, los cohetes deslizan a su nueva lane horizontal con spring (stiffness 220, damping 24) en vez de teletransportarse. Enter/exit con `opacity 0 → 1` + `scale 0.7 → 1`. Visible con 20+ jugadores donde el top 8 rota constantemente.
+- **`/api/host/logout` borrado** — endpoint quedó muerto cuando "Cerrar partida" dejó de tocar la cookie. `rm -rf src/app/api/host/logout/`.
+- **`STAGE_DURATION_OVERRIDE_MS` fuera del módulo** — `typing.ts` ya no lee env var; expone `durationMs: DEFAULT_DURATION_MS` (30s) como fallback estático. La fuente real de duración es siempre `room.stageDurationMs`. Tests ahora pasan la duración explícitamente: `hostCreatesRoom(host, pass, { stageDurationMs })`. `playwright.config.ts.webServer.env` limpiado.
+- **`/api/room/[code]/progress` ahora también usa `room.stageDurationMs`** para el check de "stage expired" (antes leía `stage.durationMs` del módulo, lo que provocaba rechazos prematuros si la sala tenía duración mayor a 30s).
+
 ### Commits
 
 - `65fdd76` feat(polish): música ambiente + flujo cerrar/reiniciar + parametrización runtime
 - `777f0dd` fix(landing): leer ?restart=1 con window.location en vez de useSearchParams (build prerender)
 - `7af735c` fix(realtime+ui): cerrar race del podio + reorganizar host broadcast en fila única
+- `1dba648` docs: progress + handoff post polish-podium-music-v1
+- `<este>` chore(polish): smooth ranking transitions + borrar logout muerto + STAGE_DURATION_OVERRIDE_MS fuera del módulo + /progress usa room duration
 
 ---
 
@@ -388,9 +397,6 @@ PLAYER_COUNT=50 BROWSER_COUNT=1 pnpm test:load
 
 - Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico).
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
-- **Saltito lateral del cohete al cambiar ranking en HostBroadcast**: la fila de top 8 reordena por `value` desc, así que cuando dos jugadores se cruzan o alguien entra/sale del top 8 los componentes saltan de lane sin animar (el `motion.div` anima solo `y`, no `layout`). Fix sugerido: añadir `layout` prop a cada cohete + `<AnimatePresence>` con `initial`/`exit` `{opacity:0, scale:0.7}`. Cambio aislado en `host-broadcast.tsx`, ~15 líneas. Más visible con 20+ jugadores donde el top 8 rota constantemente.
-- **`/api/host/logout`** quedó como endpoint muerto (no llamado por nadie tras el cambio "Cerrar = no logout"). Mantenerlo es barato; si se quiere limpiar es un `rm -rf src/app/api/host/logout/`.
-- **`STAGE_DURATION_OVERRIDE_MS`** env var sigue en `typing.ts:8-13` pero ya no se lee — la duración la decide la sala vía `room.stageDurationMs`. Limpiable.
 - **`HostBroadcast` durante racing** sigue con su layout original (grid `[1fr_360px]` con 8 cohetes + leaderboard lateral). El `.pen` `OCThd` tiene un layout muy distinto (planeta arriba, cohetes flotando libres, leaderboard derecho más detallado). Sin sincronizar — decisión: mantenemos el actual hasta `stage-2` o `stage-3` (la "pantalla estrella" según mission). Si se quiere acercar al `.pen`, requiere refactor del layout.
 - **Frame `dIApO` (Host PreGame) del `.pen`** sigue con el layout viejo de 2 columnas (AB12 + lista jugadores + botón). El código React usa el layout vertical centrado con planeta gigante. Desincronizados — actualizar el `.pen` cuando haya tiempo (operación Pencil MCP rápida, similar a la del `KFLxV`).
 - **`docs/talk/` y `slides/`** evolucionan en paralelo (commits del usuario en la misma sesión: `c17d87b`, `99e57f1`, `5a51ec6`, `075d772`, `999a117`). Son del proyecto Slidev de la charla, no del producto Liftoff.

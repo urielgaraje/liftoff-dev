@@ -14,7 +14,7 @@ test.describe("stage 1 — typing", () => {
     const alice = await fresh(browser);
     const bob = await fresh(browser);
 
-    const code = await hostCreatesRoom(host, PASSPHRASE!);
+    const code = await hostCreatesRoom(host, PASSPHRASE!, { stageDurationMs: STAGE_MS });
     await Promise.all([
       playerJoins(alice, code, "alice", "magenta"),
       playerJoins(bob, code, "bob", "yellow"),

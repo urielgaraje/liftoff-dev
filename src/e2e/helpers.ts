@@ -5,10 +5,21 @@ export async function fresh(browser: Browser): Promise<Page> {
   return ctx.newPage();
 }
 
-export async function hostCreatesRoom(host: Page, passphrase: string): Promise<string> {
+export async function hostCreatesRoom(
+  host: Page,
+  passphrase: string,
+  opts?: { stageDurationMs?: number; maxPlayers?: number },
+): Promise<string> {
   await host.goto("/");
   await host.getByTestId("host-open").click();
   await host.getByTestId("host-passphrase").fill(passphrase);
+  if (opts?.stageDurationMs !== undefined) {
+    const seconds = Math.max(5, Math.round(opts.stageDurationMs / 1000));
+    await host.getByTestId("host-duration").fill(String(seconds));
+  }
+  if (opts?.maxPlayers !== undefined) {
+    await host.getByTestId("host-max-players").fill(String(opts.maxPlayers));
+  }
   await host.getByTestId("host-create").click();
   await expect(host).toHaveURL(/\/host$/, { timeout: 30_000 });
   const codeEl = host.getByTestId("host-code");

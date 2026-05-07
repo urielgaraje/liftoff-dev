@@ -1,25 +1,16 @@
 import type { StageModule } from "../types";
 import { pickParagraph } from "./words";
 
+// Fallback duration for any code path that consults the module directly.
+// The runtime source of truth is `room.stageDurationMs` (per-room).
 const DEFAULT_DURATION_MS = 30_000;
 const MAX_CHARS_PER_SECOND = 25;
-
-function getDuration(): number {
-  const override = process.env.STAGE_DURATION_OVERRIDE_MS;
-  if (override) {
-    const n = Number(override);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-  return DEFAULT_DURATION_MS;
-}
 
 export type TypingInit = { paragraph: string };
 
 export const typingStage: StageModule<TypingInit> = {
   id: "typing",
-  get durationMs() {
-    return getDuration();
-  },
+  durationMs: DEFAULT_DURATION_MS,
   scoreMultiplier: 1,
   buildInit: () => ({ paragraph: pickParagraph() }),
   validateProgress: ({ prev, next, elapsedMs }) => {

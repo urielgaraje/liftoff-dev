@@ -63,7 +63,7 @@ export async function POST(
   }
 
   const elapsedMs = Date.now() - room.stageStartedAt.getTime();
-  if (elapsedMs > stage.durationMs + 1000) {
+  if (elapsedMs > room.stageDurationMs + 1000) {
     return NextResponse.json({ error: "stage expired" }, { status: 409 });
   }
 

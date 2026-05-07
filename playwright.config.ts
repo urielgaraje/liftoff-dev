@@ -26,8 +26,5 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: {
-      STAGE_DURATION_OVERRIDE_MS: "5000",
-    },
   },
 });
