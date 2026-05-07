@@ -2,20 +2,68 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Rocket } from "@/components/game/rocket";
 import { isValidRoomCode, normalizeRoomCode } from "@/lib/game/code";
+
+const NEON_CTA =
+  "rounded-xl bg-accent-cyan font-bold text-bg-primary shadow-[0_0_24px_var(--color-accent-cyan)] hover:bg-accent-cyan/90";
+
+const PULSE_RINGS: Array<{
+  size: number;
+  border: string;
+  thickness: string;
+  scale: number;
+  opacity: number[];
+  duration: number;
+  delay: number;
+}> = [
+  { size: 280, border: "border-accent-cyan/20", thickness: "border", scale: 1.08, opacity: [0.15, 0.28, 0.15], duration: 3.6, delay: 0 },
+  { size: 200, border: "border-accent-cyan/40", thickness: "border", scale: 1.1, opacity: [0.3, 0.5, 0.3], duration: 3, delay: 0.4 },
+  { size: 140, border: "border-accent-cyan/55", thickness: "border-2", scale: 1.12, opacity: [0.45, 0.65, 0.45], duration: 2.6, delay: 0.8 },
+];
+
+function EyebrowPill({ children }: { children: ReactNode }) {
+  return (
+    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-accent-cyan/70 px-3 py-1.5">
+      <span className="size-1.5 rounded-full bg-accent-cyan shadow-[0_0_8px_var(--color-accent-cyan)]" />
+      <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-accent-cyan">
+        {children}
+      </span>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const router = useRouter();
 
+  const [code, setCode] = useState("");
+  const [joinError, setJoinError] = useState<string | null>(null);
+
+  const [hostOpen, setHostOpen] = useState(false);
   const [passphrase, setPassphrase] = useState("");
   const [hostError, setHostError] = useState<string | null>(null);
   const [hostBusy, setHostBusy] = useState(false);
 
-  const [code, setCode] = useState("");
-  const [joinError, setJoinError] = useState<string | null>(null);
+  const onJoin = (e: FormEvent) => {
+    e.preventDefault();
+    const normalized = normalizeRoomCode(code);
+    if (!isValidRoomCode(normalized)) {
+      setJoinError("Código inválido (4 caracteres)");
+      return;
+    }
+    setJoinError(null);
+    router.push(`/play?code=${normalized}`);
+  };
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,114 +88,204 @@ export default function LandingPage() {
     }
   };
 
-  const onJoin = (e: FormEvent) => {
-    e.preventDefault();
-    const normalized = normalizeRoomCode(code);
-    if (!isValidRoomCode(normalized)) {
-      setJoinError("Código inválido (4 caracteres)");
-      return;
-    }
-    setJoinError(null);
-    router.push(`/play?code=${normalized}`);
-  };
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-12 p-8">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <motion.p
-          animate={{ opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-          className="font-mono text-xs tracking-[0.3em] text-accent-cyan"
-        >
-          5 · 4 · 3 · 2 · 1
-        </motion.p>
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-7xl font-bold tracking-tight text-fg-primary"
-        >
-          Liftoff
-        </motion.h1>
-        <p className="text-fg-secondary">Carrera de cohetes multijugador en directo</p>
-        <p className="font-mono text-xs tracking-wide text-fg-muted">
-          50 jugadores · 3 etapas · ~4 min
-        </p>
+    <main className="relative flex min-h-screen flex-col overflow-hidden">
+      <LandingScene />
+
+      <div className="relative z-10 flex flex-1 items-center">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col px-12 lg:px-20">
+          <header className="pt-10">
+            <p className="font-mono text-sm font-bold tracking-[0.3em] text-fg-primary">
+              LIFTOFF
+            </p>
+          </header>
+
+          <div className="mt-20 flex max-w-[640px] flex-col">
+            <motion.p
+              animate={{ opacity: [0.65, 1, 0.65] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+              className="font-mono text-xs font-bold tracking-[0.3em] text-accent-cyan"
+            >
+              T-MINUS  5 · 4 · 3 · 2 · 1
+            </motion.p>
+
+            <div className="mt-4">
+              <EyebrowPill>EN DIRECTO  ·  MULTIJUGADOR</EyebrowPill>
+            </div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              className="mt-3 text-[clamp(96px,11vw,140px)] font-bold leading-none tracking-tight text-fg-primary"
+            >
+              Liftoff
+            </motion.h1>
+
+            <p className="mt-6 max-w-md text-2xl font-semibold text-fg-primary">
+              Una carrera de cohetes en directo.
+            </p>
+            <p className="mt-1 max-w-md text-lg text-fg-secondary">
+              50 jugadores · 3 etapas · ~4 minutos de pura velocidad.
+            </p>
+
+            <form
+              onSubmit={onJoin}
+              aria-label="unirse a partida"
+              className="mt-10 flex items-center gap-3"
+            >
+              <Input
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.toUpperCase().slice(0, 4))
+                }
+                placeholder="AB12"
+                maxLength={4}
+                className="h-[72px] w-[200px] rounded-xl border-bg-tertiary bg-bg-secondary px-4 text-center font-mono text-[28px] font-bold uppercase tracking-[0.4em] text-fg-primary placeholder:text-fg-muted"
+                aria-label="código de sala"
+                data-testid="join-code"
+              />
+              <Button
+                type="submit"
+                disabled={code.length !== 4}
+                data-testid="join-submit"
+                className={`h-[72px] w-[228px] text-base ${NEON_CTA}`}
+              >
+                Únete →
+              </Button>
+            </form>
+            {joinError && (
+              <p className="mt-3 text-sm text-rocket-red" role="alert">
+                {joinError}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setHostOpen(true)}
+              data-testid="host-open"
+              className="mt-8 self-start text-sm font-medium text-accent-cyan transition-opacity hover:opacity-80"
+            >
+              ¿Eres host? Crea una partida →
+            </button>
+
+            <p className="mt-6 font-mono text-[11px] font-bold tracking-[0.28em] text-fg-muted">
+              SIN INSTALACIÓN   ·   REALTIME   ·   DESKTOP
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
-        <form
-          onSubmit={onCreate}
-          aria-label="crear partida"
-          className="flex flex-col gap-4 rounded-2xl bg-bg-secondary p-6 ring-1 ring-bg-tertiary"
-        >
-          <div>
-            <p className="font-mono text-xs tracking-wider text-fg-muted">SOY HOST</p>
-            <h2 className="mt-1 text-lg font-medium text-fg-primary">Crear partida</h2>
-          </div>
-          <Input
-            type="password"
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            placeholder="passphrase"
-            className="h-10"
-            autoComplete="off"
-            aria-label="passphrase de host"
-            data-testid="host-passphrase"
-          />
-          <Button
-            type="submit"
-            disabled={!passphrase || hostBusy}
-            data-testid="host-create"
-            className="h-10"
-          >
-            {hostBusy ? "Creando…" : "Crear partida"}
-          </Button>
-          {hostError && (
-            <p className="text-sm text-rocket-red" role="alert">
-              {hostError}
-            </p>
-          )}
-        </form>
-
-        <form
-          onSubmit={onJoin}
-          aria-label="unirse a partida"
-          className="flex flex-col gap-4 rounded-2xl bg-bg-secondary p-6 ring-1 ring-bg-tertiary"
-        >
-          <div>
-            <p className="font-mono text-xs tracking-wider text-fg-muted">SOY JUGADOR</p>
-            <h2 className="mt-1 text-lg font-medium text-fg-primary">Tengo un código</h2>
-          </div>
-          <Input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 4))}
-            placeholder="AB12"
-            maxLength={4}
-            className="h-10 text-center font-mono text-2xl tracking-[0.4em] uppercase"
-            aria-label="código de sala"
-            data-testid="join-code"
-          />
-          <Button
-            type="submit"
-            variant="secondary"
-            disabled={code.length !== 4}
-            data-testid="join-submit"
-            className="h-10"
-          >
-            Únete
-          </Button>
-          {joinError && (
-            <p className="text-sm text-rocket-red" role="alert">
-              {joinError}
-            </p>
-          )}
-        </form>
-      </div>
-
-      <p className="font-mono text-xs text-fg-muted">
+      <p className="pointer-events-none absolute right-12 bottom-6 z-10 font-mono text-[11px] text-fg-muted">
         Mejor experiencia en navegador desktop
       </p>
+
+      <Dialog open={hostOpen} onOpenChange={setHostOpen}>
+        <DialogContent className="gap-3 bg-bg-secondary p-8 ring-bg-tertiary sm:max-w-[480px]">
+          <DialogHeader className="gap-2">
+            <EyebrowPill>SOY HOST</EyebrowPill>
+            <DialogTitle className="text-3xl font-bold text-fg-primary">
+              Crear partida
+            </DialogTitle>
+            <DialogDescription className="text-fg-secondary">
+              Introduce la passphrase del host para activar la sala.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={onCreate}
+            aria-label="crear partida"
+            className="mt-2 flex flex-col gap-3"
+          >
+            <p className="font-mono text-[11px] font-bold tracking-[0.2em] text-fg-muted">
+              PASSPHRASE
+            </p>
+            <Input
+              type="password"
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              placeholder="••••••••"
+              className="h-[52px] rounded-[10px] border-bg-tertiary bg-bg-tertiary px-4 font-mono text-base text-fg-primary"
+              autoComplete="off"
+              autoFocus
+              aria-label="passphrase de host"
+              data-testid="host-passphrase"
+            />
+            <Button
+              type="submit"
+              disabled={!passphrase || hostBusy}
+              data-testid="host-create"
+              className={`h-[56px] text-base ${NEON_CTA}`}
+            >
+              {hostBusy ? "Creando…" : "Crear partida →"}
+            </Button>
+            {hostError && (
+              <p className="text-sm text-rocket-red" role="alert">
+                {hostError}
+              </p>
+            )}
+            <p className="text-xs text-fg-muted">
+              La passphrase la define HOST_PASSPHRASE del entorno.
+            </p>
+          </form>
+        </DialogContent>
+      </Dialog>
     </main>
+  );
+}
+
+function LandingScene() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute -top-[280px] -right-[200px] size-[640px]">
+        <motion.div
+          className="absolute -inset-10 rounded-full border border-accent-cyan/35"
+          animate={{ opacity: [0.25, 0.45, 0.25], scale: [1, 1.02, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 38% 35%, #14B8A6 0%, #0F766E 55%, #064E3B 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 78% 50%, transparent 48%, var(--color-bg-primary) 100%)",
+            opacity: 0.7,
+          }}
+        />
+      </div>
+
+      <div className="absolute right-[6%] top-1/2 -translate-y-1/2 lg:right-[10%]">
+        <div className="relative">
+          {PULSE_RINGS.map((r, i) => (
+            <motion.div
+              key={i}
+              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ${r.thickness} ${r.border}`}
+              style={{ width: r.size, height: r.size }}
+              animate={{ scale: [1, r.scale, 1], opacity: r.opacity }}
+              transition={{
+                duration: r.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: r.delay,
+              }}
+            />
+          ))}
+          <Rocket skin="cyan" size={200} animate intensity={1.2} />
+        </div>
+
+        <div className="absolute -left-44 top-12 opacity-90">
+          <Rocket skin="magenta" size={80} animate intensity={0.8} />
+        </div>
+        <div className="absolute -right-32 top-32 opacity-80">
+          <Rocket skin="yellow" size={64} animate intensity={0.7} />
+        </div>
+      </div>
+    </div>
   );
 }

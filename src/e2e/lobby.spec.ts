@@ -9,6 +9,7 @@ async function fresh(browser: Browser): Promise<Page> {
 
 async function hostCreatesRoom(host: Page): Promise<string> {
   await host.goto("/");
+  await host.getByTestId("host-open").click();
   await host.getByTestId("host-passphrase").fill(PASSPHRASE!);
   await host.getByTestId("host-create").click();
   await expect(host).toHaveURL(/\/host$/);
