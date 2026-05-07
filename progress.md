@@ -55,10 +55,55 @@ Cliente:
 - Todos los `/50` hardcodeados en `host-pregame.tsx`, `host-broadcast.tsx`, `play-client.tsx` lobby ahora leen `room.maxPlayers`.
 - Dialog "Crear partida" en `(public)/page.tsx`: passphrase condicional (oculta si `hostAuthed`), grid 2-col con 2 number inputs (DURACIÓN seg, JUGADORES MÁX). Auto-abre si `?restart=1` en la URL.
 
+### 4. Bug fix de prerender (post-deploy fail)
+
+Primer deploy a Vercel falló con `Error occurred prerendering page "/"`. Causa: añadí `useSearchParams()` para detectar `?restart=1` en la home, lo que en App Router fuerza render dinámico salvo que envuelvas en `<Suspense>`. La home era estática (○) y el build petó al intentar prerender.
+
+Fix: leer `window.location.search` dentro de un `useEffect` (sin hooks de Next). La home vuelve a ser prerenderable y el comportamiento del query param es idéntico (`commit 777f0dd`).
+
+### 5. Race del podio (data inconsistency cazada en pruebas reales)
+
+Síntoma reportado por usuario tras jugar con 5 personas: el podio mostraba a Usman 3º con 144m, pero el sidebar live tenía a Juanjo 3º con 167m. Más, los valores de oro/plata diferían en ~6m entre podio y sidebar.
+
+Causa: race entre `/progress` y `/end-stage`. Si un `/progress` llega al servidor justo antes de `/end-stage` (lee `room` con status `racing`) pero alcanza `setValue` DESPUÉS de que `/end-stage` tomó el snapshot del store y bulk-inserteó a DB, el valor entra a memoria, dispara el `broadcastProgress` (host UI lo ve), pero NO está en el snapshot que se persistió. `clearStage` después borra esa actualización tardía. DB y host UI quedan desincronizados.
+
+Fix (`commit 7af735c`): activate-stage gate en `progress-store`.
+
+- `progress-store.ts` añade `Set<StageKey>` `activeStages` con `activateStage`, `deactivateStage`, `isStageActive`. `setValue` ahora devuelve `boolean`: `false` si la stage no está activa (no escribe).
+- `/start` activa la stage justo antes del broadcast.
+- `/end-stage` desactiva ANTES del snapshot. Cualquier `/progress` en vuelo que llegue después ve `setValue → false`, no escribe en memoria, **no broadcastea** (nuevo: 409 antes del Pusher call), así el host UI nunca ve un valor que la DB no tenga.
+- Multi-stage: `/end-stage` activa la stage siguiente cuando hay `next`, antes del broadcast `StageStarted`.
+
+Trade-off: las actualizaciones en vuelo durante el cierre se pierden (~últimos 100-300ms del stage). El cliente ya las pierde de todos modos por throttle 1000ms; ahora se pierden de forma simétrica entre DB y UI. Consistente > completista.
+
+### 6. Reorganización del host broadcast (top 8 fila única)
+
+Síntoma: con muchos jugadores los cohetes se solapaban verticalmente entre filas del grid 4×2 al subir con `y: -lift`.
+
+Fix (`commit 7af735c`): `grid-cols-4 max-w-3xl` → `grid-cols-8 max-w-5xl`. Top 8 cohetes en una sola fila, cada uno en su lane horizontal. Sin solape entre lanes.
+
+Pendiente menor (no implementado en este slice): cuando alguien entra/sale del top 8 o cruza a otro de los 8 en posición, el cohete que se desplaza salta de lane sin animar (motion en `y` está, pero la posición horizontal del grid no usa `layout`). Visualmente se nota un "saltito lateral" cuando cambian los rankings — ver `## Pendientes cosméticos` abajo.
+
+### Migración aplicada a producción
+
+La migración `0002_odd_senator_kelly.sql` se aplicó a la DB de prod (no solo dev). `vercel env pull` devuelve los `DATABASE_URL*` vacíos cuando vienen de la integración Neon Marketplace, así que no sirve. La receta correcta:
+
+```bash
+vercel env run --environment=production -- npx tsx ./apply-migration.ts
+```
+
+`vercel env run` SÍ inyecta los secretos managed-by-integration en el proceso. El script usado fue idempotente (`ADD COLUMN IF NOT EXISTS`) por seguridad.
+
 ### Lo que NO se cambió
 
 - Motor de stages, anti-cheat, schema de `players`/`scores`, eventos Pusher.
 - `useRoomChannel.maxStatus` (el invariante anti-race sigue intacto — la solución del restart fue navegación dura, no romper el guard).
+
+### Commits
+
+- `65fdd76` feat(polish): música ambiente + flujo cerrar/reiniciar + parametrización runtime
+- `777f0dd` fix(landing): leer ?restart=1 con window.location en vez de useSearchParams (build prerender)
+- `7af735c` fix(realtime+ui): cerrar race del podio + reorganizar host broadcast en fila única
 
 ---
 
@@ -343,6 +388,9 @@ PLAYER_COUNT=50 BROWSER_COUNT=1 pnpm test:load
 
 - Status check rojo de `Vercel` en commit `138d1d3` (artefacto histórico).
 - Hydration warning de Grammarly (extensión navegador, ruido de consola, no funcional).
-- **`HostBroadcast` durante racing** sigue con su layout original (grid `[1fr_360px]` con 8 cohetes en grid + leaderboard lateral). El `.pen` `OCThd` tiene un layout muy distinto (planeta arriba, cohetes flotando libres, leaderboard derecho más detallado). Sin sincronizar — decisión: mantenemos el actual hasta `stage-2` o `stage-3` (la "pantalla estrella" según mission). Si se quiere acercar al `.pen`, requiere refactor del layout.
+- **Saltito lateral del cohete al cambiar ranking en HostBroadcast**: la fila de top 8 reordena por `value` desc, así que cuando dos jugadores se cruzan o alguien entra/sale del top 8 los componentes saltan de lane sin animar (el `motion.div` anima solo `y`, no `layout`). Fix sugerido: añadir `layout` prop a cada cohete + `<AnimatePresence>` con `initial`/`exit` `{opacity:0, scale:0.7}`. Cambio aislado en `host-broadcast.tsx`, ~15 líneas. Más visible con 20+ jugadores donde el top 8 rota constantemente.
+- **`/api/host/logout`** quedó como endpoint muerto (no llamado por nadie tras el cambio "Cerrar = no logout"). Mantenerlo es barato; si se quiere limpiar es un `rm -rf src/app/api/host/logout/`.
+- **`STAGE_DURATION_OVERRIDE_MS`** env var sigue en `typing.ts:8-13` pero ya no se lee — la duración la decide la sala vía `room.stageDurationMs`. Limpiable.
+- **`HostBroadcast` durante racing** sigue con su layout original (grid `[1fr_360px]` con 8 cohetes + leaderboard lateral). El `.pen` `OCThd` tiene un layout muy distinto (planeta arriba, cohetes flotando libres, leaderboard derecho más detallado). Sin sincronizar — decisión: mantenemos el actual hasta `stage-2` o `stage-3` (la "pantalla estrella" según mission). Si se quiere acercar al `.pen`, requiere refactor del layout.
 - **Frame `dIApO` (Host PreGame) del `.pen`** sigue con el layout viejo de 2 columnas (AB12 + lista jugadores + botón). El código React usa el layout vertical centrado con planeta gigante. Desincronizados — actualizar el `.pen` cuando haya tiempo (operación Pencil MCP rápida, similar a la del `KFLxV`).
 - **`docs/talk/` y `slides/`** evolucionan en paralelo (commits del usuario en la misma sesión: `c17d87b`, `99e57f1`, `5a51ec6`, `075d772`, `999a117`). Son del proyecto Slidev de la charla, no del producto Liftoff.
